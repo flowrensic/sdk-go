@@ -72,10 +72,10 @@ func (Engine) EnumDescriptor() ([]byte, []int) {
 	return file_flowrensic_v1_catalog_proto_rawDescGZIP(), []int{0}
 }
 
-// DeployEnv is one deployment environment: prod, staging, qa, ci. A row rather
+// Env is one deployment environment: prod, staging, qa, ci. A row rather
 // than a string, so "prod" and "production" cannot silently become two
 // environments and split the cross-environment view.
-type DeployEnv struct {
+type Env struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	Id        string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name      string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
@@ -89,20 +89,20 @@ type DeployEnv struct {
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *DeployEnv) Reset() {
-	*x = DeployEnv{}
+func (x *Env) Reset() {
+	*x = Env{}
 	mi := &file_flowrensic_v1_catalog_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *DeployEnv) String() string {
+func (x *Env) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*DeployEnv) ProtoMessage() {}
+func (*Env) ProtoMessage() {}
 
-func (x *DeployEnv) ProtoReflect() protoreflect.Message {
+func (x *Env) ProtoReflect() protoreflect.Message {
 	mi := &file_flowrensic_v1_catalog_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -114,40 +114,40 @@ func (x *DeployEnv) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use DeployEnv.ProtoReflect.Descriptor instead.
-func (*DeployEnv) Descriptor() ([]byte, []int) {
+// Deprecated: Use Env.ProtoReflect.Descriptor instead.
+func (*Env) Descriptor() ([]byte, []int) {
 	return file_flowrensic_v1_catalog_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *DeployEnv) GetId() string {
+func (x *Env) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *DeployEnv) GetName() string {
+func (x *Env) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-func (x *DeployEnv) GetCreatedAt() *timestamppb.Timestamp {
+func (x *Env) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
 	return nil
 }
 
-func (x *DeployEnv) GetKind() string {
+func (x *Env) GetKind() string {
 	if x != nil {
 		return x.Kind
 	}
 	return ""
 }
 
-func (x *DeployEnv) GetRequired() bool {
+func (x *Env) GetRequired() bool {
 	if x != nil {
 		return x.Required
 	}
@@ -158,13 +158,13 @@ func (x *DeployEnv) GetRequired() bool {
 // property of the server, not of a namespace on it, which is why the two are
 // separate rows: one scrape serves every namespace the server hosts.
 type Server struct {
-	state       protoimpl.MessageState `protogen:"open.v1"`
-	Id          string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	DeployEnvId string                 `protobuf:"bytes,2,opt,name=deploy_env_id,json=deployEnvId,proto3" json:"deploy_env_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	EnvId string                 `protobuf:"bytes,2,opt,name=env_id,json=envId,proto3" json:"env_id,omitempty"`
 	// Name of the environment the id points at, carried so a reader needs no
 	// second call.
-	DeployEnv string `protobuf:"bytes,3,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
-	Endpoint  string `protobuf:"bytes,4,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
+	Env      string `protobuf:"bytes,3,opt,name=env,proto3" json:"env,omitempty"`
+	Endpoint string `protobuf:"bytes,4,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
 	// Prometheus endpoint of the server itself, as host:port. Scraped on an
 	// interval when set. Workers report what they did; this is what the server
 	// says happened, including the part no worker can see.
@@ -214,16 +214,16 @@ func (x *Server) GetId() string {
 	return ""
 }
 
-func (x *Server) GetDeployEnvId() string {
+func (x *Server) GetEnvId() string {
 	if x != nil {
-		return x.DeployEnvId
+		return x.EnvId
 	}
 	return ""
 }
 
-func (x *Server) GetDeployEnv() string {
+func (x *Server) GetEnv() string {
 	if x != nil {
-		return x.DeployEnv
+		return x.Env
 	}
 	return ""
 }
@@ -266,7 +266,7 @@ type Namespace struct {
 	// The server's endpoint and the environment it is in, carried so a reader
 	// needs no second call.
 	Endpoint      string                 `protobuf:"bytes,4,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
-	DeployEnv     string                 `protobuf:"bytes,5,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
+	Env           string                 `protobuf:"bytes,5,opt,name=env,proto3" json:"env,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -330,9 +330,9 @@ func (x *Namespace) GetEndpoint() string {
 	return ""
 }
 
-func (x *Namespace) GetDeployEnv() string {
+func (x *Namespace) GetEnv() string {
 	if x != nil {
-		return x.DeployEnv
+		return x.Env
 	}
 	return ""
 }
@@ -349,7 +349,7 @@ func (x *Namespace) GetCreatedAt() *timestamppb.Timestamp {
 // never needs three round trips.
 type RegisterNamespaceRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
-	DeployEnv       string                 `protobuf:"bytes,1,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
+	Env             string                 `protobuf:"bytes,1,opt,name=env,proto3" json:"env,omitempty"`
 	Endpoint        string                 `protobuf:"bytes,2,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
 	Namespace       string                 `protobuf:"bytes,3,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	MetricsEndpoint string                 `protobuf:"bytes,4,opt,name=metrics_endpoint,json=metricsEndpoint,proto3" json:"metrics_endpoint,omitempty"`
@@ -387,9 +387,9 @@ func (*RegisterNamespaceRequest) Descriptor() ([]byte, []int) {
 	return file_flowrensic_v1_catalog_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *RegisterNamespaceRequest) GetDeployEnv() string {
+func (x *RegisterNamespaceRequest) GetEnv() string {
 	if x != nil {
-		return x.DeployEnv
+		return x.Env
 	}
 	return ""
 }
@@ -459,26 +459,28 @@ func (x *RegisterNamespaceResponse) GetNamespace() *Namespace {
 	return nil
 }
 
-type ListDeployEnvsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
+type ListEnvsRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,1,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListDeployEnvsRequest) Reset() {
-	*x = ListDeployEnvsRequest{}
+func (x *ListEnvsRequest) Reset() {
+	*x = ListEnvsRequest{}
 	mi := &file_flowrensic_v1_catalog_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListDeployEnvsRequest) String() string {
+func (x *ListEnvsRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListDeployEnvsRequest) ProtoMessage() {}
+func (*ListEnvsRequest) ProtoMessage() {}
 
-func (x *ListDeployEnvsRequest) ProtoReflect() protoreflect.Message {
+func (x *ListEnvsRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_flowrensic_v1_catalog_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -490,32 +492,41 @@ func (x *ListDeployEnvsRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListDeployEnvsRequest.ProtoReflect.Descriptor instead.
-func (*ListDeployEnvsRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use ListEnvsRequest.ProtoReflect.Descriptor instead.
+func (*ListEnvsRequest) Descriptor() ([]byte, []int) {
 	return file_flowrensic_v1_catalog_proto_rawDescGZIP(), []int{5}
 }
 
-type ListDeployEnvsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	DeployEnvs    []*DeployEnv           `protobuf:"bytes,1,rep,name=deploy_envs,json=deployEnvs,proto3" json:"deploy_envs,omitempty"`
+func (x *ListEnvsRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
+type ListEnvsResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Envs  []*Env                 `protobuf:"bytes,1,rep,name=envs,proto3" json:"envs,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ListDeployEnvsResponse) Reset() {
-	*x = ListDeployEnvsResponse{}
+func (x *ListEnvsResponse) Reset() {
+	*x = ListEnvsResponse{}
 	mi := &file_flowrensic_v1_catalog_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ListDeployEnvsResponse) String() string {
+func (x *ListEnvsResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ListDeployEnvsResponse) ProtoMessage() {}
+func (*ListEnvsResponse) ProtoMessage() {}
 
-func (x *ListDeployEnvsResponse) ProtoReflect() protoreflect.Message {
+func (x *ListEnvsResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_flowrensic_v1_catalog_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -527,20 +538,29 @@ func (x *ListDeployEnvsResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ListDeployEnvsResponse.ProtoReflect.Descriptor instead.
-func (*ListDeployEnvsResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use ListEnvsResponse.ProtoReflect.Descriptor instead.
+func (*ListEnvsResponse) Descriptor() ([]byte, []int) {
 	return file_flowrensic_v1_catalog_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *ListDeployEnvsResponse) GetDeployEnvs() []*DeployEnv {
+func (x *ListEnvsResponse) GetEnvs() []*Env {
 	if x != nil {
-		return x.DeployEnvs
+		return x.Envs
+	}
+	return nil
+}
+
+func (x *ListEnvsResponse) GetPage() *PageResponse {
+	if x != nil {
+		return x.Page
 	}
 	return nil
 }
 
 type ListServersRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,1,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -575,9 +595,18 @@ func (*ListServersRequest) Descriptor() ([]byte, []int) {
 	return file_flowrensic_v1_catalog_proto_rawDescGZIP(), []int{7}
 }
 
+func (x *ListServersRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 type ListServersResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Servers       []*Server              `protobuf:"bytes,1,rep,name=servers,proto3" json:"servers,omitempty"`
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	Servers []*Server              `protobuf:"bytes,1,rep,name=servers,proto3" json:"servers,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -619,8 +648,17 @@ func (x *ListServersResponse) GetServers() []*Server {
 	return nil
 }
 
+func (x *ListServersResponse) GetPage() *PageResponse {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 type ListNamespacesRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,1,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -655,9 +693,18 @@ func (*ListNamespacesRequest) Descriptor() ([]byte, []int) {
 	return file_flowrensic_v1_catalog_proto_rawDescGZIP(), []int{9}
 }
 
+func (x *ListNamespacesRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 type ListNamespacesResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Namespaces    []*Namespace           `protobuf:"bytes,1,rep,name=namespaces,proto3" json:"namespaces,omitempty"`
+	state      protoimpl.MessageState `protogen:"open.v1"`
+	Namespaces []*Namespace           `protobuf:"bytes,1,rep,name=namespaces,proto3" json:"namespaces,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -699,57 +746,66 @@ func (x *ListNamespacesResponse) GetNamespaces() []*Namespace {
 	return nil
 }
 
+func (x *ListNamespacesResponse) GetPage() *PageResponse {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 var File_flowrensic_v1_catalog_proto protoreflect.FileDescriptor
 
 const file_flowrensic_v1_catalog_proto_rawDesc = "" +
 	"\n" +
-	"\x1bflowrensic/v1/catalog.proto\x12\rflowrensic.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x9a\x01\n" +
-	"\tDeployEnv\x12\x0e\n" +
+	"\x1bflowrensic/v1/catalog.proto\x12\rflowrensic.v1\x1a\x18flowrensic/v1/page.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x94\x01\n" +
+	"\x03Env\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x129\n" +
 	"\n" +
 	"created_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x12\n" +
 	"\x04kind\x18\x04 \x01(\tR\x04kind\x12\x1a\n" +
-	"\brequired\x18\x05 \x01(\bR\brequired\"\x89\x02\n" +
+	"\brequired\x18\x05 \x01(\bR\brequired\"\xef\x01\n" +
 	"\x06Server\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\"\n" +
-	"\rdeploy_env_id\x18\x02 \x01(\tR\vdeployEnvId\x12\x1d\n" +
-	"\n" +
-	"deploy_env\x18\x03 \x01(\tR\tdeployEnv\x12\x1a\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x15\n" +
+	"\x06env_id\x18\x02 \x01(\tR\x05envId\x12\x10\n" +
+	"\x03env\x18\x03 \x01(\tR\x03env\x12\x1a\n" +
 	"\bendpoint\x18\x04 \x01(\tR\bendpoint\x12)\n" +
 	"\x10metrics_endpoint\x18\x05 \x01(\tR\x0fmetricsEndpoint\x129\n" +
 	"\n" +
 	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12*\n" +
-	"\x11metrics_last_read\x18\a \x01(\tR\x0fmetricsLastRead\"\xc2\x01\n" +
+	"\x11metrics_last_read\x18\a \x01(\tR\x0fmetricsLastRead\"\xb5\x01\n" +
 	"\tNamespace\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\tserver_id\x18\x02 \x01(\tR\bserverId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12\x1a\n" +
-	"\bendpoint\x18\x04 \x01(\tR\bendpoint\x12\x1d\n" +
+	"\bendpoint\x18\x04 \x01(\tR\bendpoint\x12\x10\n" +
+	"\x03env\x18\x05 \x01(\tR\x03env\x129\n" +
 	"\n" +
-	"deploy_env\x18\x05 \x01(\tR\tdeployEnv\x129\n" +
-	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x9e\x01\n" +
-	"\x18RegisterNamespaceRequest\x12\x1d\n" +
-	"\n" +
-	"deploy_env\x18\x01 \x01(\tR\tdeployEnv\x12\x1a\n" +
+	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x91\x01\n" +
+	"\x18RegisterNamespaceRequest\x12\x10\n" +
+	"\x03env\x18\x01 \x01(\tR\x03env\x12\x1a\n" +
 	"\bendpoint\x18\x02 \x01(\tR\bendpoint\x12\x1c\n" +
 	"\tnamespace\x18\x03 \x01(\tR\tnamespace\x12)\n" +
 	"\x10metrics_endpoint\x18\x04 \x01(\tR\x0fmetricsEndpoint\"S\n" +
 	"\x19RegisterNamespaceResponse\x126\n" +
-	"\tnamespace\x18\x01 \x01(\v2\x18.flowrensic.v1.NamespaceR\tnamespace\"\x17\n" +
-	"\x15ListDeployEnvsRequest\"S\n" +
-	"\x16ListDeployEnvsResponse\x129\n" +
-	"\vdeploy_envs\x18\x01 \x03(\v2\x18.flowrensic.v1.DeployEnvR\n" +
-	"deployEnvs\"\x14\n" +
-	"\x12ListServersRequest\"F\n" +
+	"\tnamespace\x18\x01 \x01(\v2\x18.flowrensic.v1.NamespaceR\tnamespace\"A\n" +
+	"\x0fListEnvsRequest\x12.\n" +
+	"\x04page\x18\x01 \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04page\"k\n" +
+	"\x10ListEnvsResponse\x12&\n" +
+	"\x04envs\x18\x01 \x03(\v2\x12.flowrensic.v1.EnvR\x04envs\x12/\n" +
+	"\x04page\x18\x02 \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04page\"D\n" +
+	"\x12ListServersRequest\x12.\n" +
+	"\x04page\x18\x01 \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04page\"w\n" +
 	"\x13ListServersResponse\x12/\n" +
-	"\aservers\x18\x01 \x03(\v2\x15.flowrensic.v1.ServerR\aservers\"\x17\n" +
-	"\x15ListNamespacesRequest\"R\n" +
+	"\aservers\x18\x01 \x03(\v2\x15.flowrensic.v1.ServerR\aservers\x12/\n" +
+	"\x04page\x18\x02 \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04page\"G\n" +
+	"\x15ListNamespacesRequest\x12.\n" +
+	"\x04page\x18\x01 \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04page\"\x83\x01\n" +
 	"\x16ListNamespacesResponse\x128\n" +
 	"\n" +
 	"namespaces\x18\x01 \x03(\v2\x18.flowrensic.v1.NamespaceR\n" +
-	"namespaces*\xa3\x01\n" +
+	"namespaces\x12/\n" +
+	"\x04page\x18\x02 \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04page*\xa3\x01\n" +
 	"\x06Engine\x12\x16\n" +
 	"\x12ENGINE_UNSPECIFIED\x10\x00\x12\x13\n" +
 	"\x0fENGINE_TEMPORAL\x10\x01\"\x04\b\x02\x10\a*\x0eENGINE_CADENCE*\x0eENGINE_RESTATE*\vENGINE_DBOS*\x0eENGINE_INNGEST*\x12ENGINE_TRIGGER_DEV*\x15ENGINE_STEP_FUNCTIONSB\xb5\x01\n" +
@@ -771,32 +827,40 @@ var file_flowrensic_v1_catalog_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
 var file_flowrensic_v1_catalog_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_flowrensic_v1_catalog_proto_goTypes = []any{
 	(Engine)(0),                       // 0: flowrensic.v1.Engine
-	(*DeployEnv)(nil),                 // 1: flowrensic.v1.DeployEnv
+	(*Env)(nil),                       // 1: flowrensic.v1.Env
 	(*Server)(nil),                    // 2: flowrensic.v1.Server
 	(*Namespace)(nil),                 // 3: flowrensic.v1.Namespace
 	(*RegisterNamespaceRequest)(nil),  // 4: flowrensic.v1.RegisterNamespaceRequest
 	(*RegisterNamespaceResponse)(nil), // 5: flowrensic.v1.RegisterNamespaceResponse
-	(*ListDeployEnvsRequest)(nil),     // 6: flowrensic.v1.ListDeployEnvsRequest
-	(*ListDeployEnvsResponse)(nil),    // 7: flowrensic.v1.ListDeployEnvsResponse
+	(*ListEnvsRequest)(nil),           // 6: flowrensic.v1.ListEnvsRequest
+	(*ListEnvsResponse)(nil),          // 7: flowrensic.v1.ListEnvsResponse
 	(*ListServersRequest)(nil),        // 8: flowrensic.v1.ListServersRequest
 	(*ListServersResponse)(nil),       // 9: flowrensic.v1.ListServersResponse
 	(*ListNamespacesRequest)(nil),     // 10: flowrensic.v1.ListNamespacesRequest
 	(*ListNamespacesResponse)(nil),    // 11: flowrensic.v1.ListNamespacesResponse
 	(*timestamppb.Timestamp)(nil),     // 12: google.protobuf.Timestamp
+	(*PageRequest)(nil),               // 13: flowrensic.v1.PageRequest
+	(*PageResponse)(nil),              // 14: flowrensic.v1.PageResponse
 }
 var file_flowrensic_v1_catalog_proto_depIdxs = []int32{
-	12, // 0: flowrensic.v1.DeployEnv.created_at:type_name -> google.protobuf.Timestamp
+	12, // 0: flowrensic.v1.Env.created_at:type_name -> google.protobuf.Timestamp
 	12, // 1: flowrensic.v1.Server.created_at:type_name -> google.protobuf.Timestamp
 	12, // 2: flowrensic.v1.Namespace.created_at:type_name -> google.protobuf.Timestamp
 	3,  // 3: flowrensic.v1.RegisterNamespaceResponse.namespace:type_name -> flowrensic.v1.Namespace
-	1,  // 4: flowrensic.v1.ListDeployEnvsResponse.deploy_envs:type_name -> flowrensic.v1.DeployEnv
-	2,  // 5: flowrensic.v1.ListServersResponse.servers:type_name -> flowrensic.v1.Server
-	3,  // 6: flowrensic.v1.ListNamespacesResponse.namespaces:type_name -> flowrensic.v1.Namespace
-	7,  // [7:7] is the sub-list for method output_type
-	7,  // [7:7] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	13, // 4: flowrensic.v1.ListEnvsRequest.page:type_name -> flowrensic.v1.PageRequest
+	1,  // 5: flowrensic.v1.ListEnvsResponse.envs:type_name -> flowrensic.v1.Env
+	14, // 6: flowrensic.v1.ListEnvsResponse.page:type_name -> flowrensic.v1.PageResponse
+	13, // 7: flowrensic.v1.ListServersRequest.page:type_name -> flowrensic.v1.PageRequest
+	2,  // 8: flowrensic.v1.ListServersResponse.servers:type_name -> flowrensic.v1.Server
+	14, // 9: flowrensic.v1.ListServersResponse.page:type_name -> flowrensic.v1.PageResponse
+	13, // 10: flowrensic.v1.ListNamespacesRequest.page:type_name -> flowrensic.v1.PageRequest
+	3,  // 11: flowrensic.v1.ListNamespacesResponse.namespaces:type_name -> flowrensic.v1.Namespace
+	14, // 12: flowrensic.v1.ListNamespacesResponse.page:type_name -> flowrensic.v1.PageResponse
+	13, // [13:13] is the sub-list for method output_type
+	13, // [13:13] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_flowrensic_v1_catalog_proto_init() }
@@ -804,6 +868,7 @@ func file_flowrensic_v1_catalog_proto_init() {
 	if File_flowrensic_v1_catalog_proto != nil {
 		return
 	}
+	file_flowrensic_v1_page_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

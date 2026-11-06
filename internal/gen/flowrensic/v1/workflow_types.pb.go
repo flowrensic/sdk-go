@@ -54,7 +54,12 @@ type WorkflowTypeRow struct {
 	HasBillable    bool    `protobuf:"varint,20,opt,name=has_billable,json=hasBillable,proto3" json:"has_billable,omitempty"`
 	// cost_usd is the approximate cost of billable_events in US dollars, at
 	// the price of CostSummary, FPP-077-R05.
-	CostUsd       float64 `protobuf:"fixed64,21,opt,name=cost_usd,json=costUsd,proto3" json:"cost_usd,omitempty"`
+	CostUsd float64 `protobuf:"fixed64,21,opt,name=cost_usd,json=costUsd,proto3" json:"cost_usd,omitempty"`
+	// task_queues are the queues the type ran on in the range, and
+	// worker_names the names of the workers on those queues, each sorted,
+	// FPP-011-R06.
+	TaskQueues    []string `protobuf:"bytes,22,rep,name=task_queues,json=taskQueues,proto3" json:"task_queues,omitempty"`
+	WorkerNames   []string `protobuf:"bytes,23,rep,name=worker_names,json=workerNames,proto3" json:"worker_names,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -236,6 +241,20 @@ func (x *WorkflowTypeRow) GetCostUsd() float64 {
 	return 0
 }
 
+func (x *WorkflowTypeRow) GetTaskQueues() []string {
+	if x != nil {
+		return x.TaskQueues
+	}
+	return nil
+}
+
+func (x *WorkflowTypeRow) GetWorkerNames() []string {
+	if x != nil {
+		return x.WorkerNames
+	}
+	return nil
+}
+
 // CostSummary is the approximate cost of every workflow type over windows
 // that end now, whatever the range of the table, FPP-077-R04. A window is
 // FLOWRENSIC_COST_WINDOW long, a month by default.
@@ -370,11 +389,16 @@ type ListWorkflowTypesRequest struct {
 	// since is left out for the last 2 weeks, until for now.
 	Since *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=since,proto3" json:"since,omitempty"`
 	Until *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=until,proto3" json:"until,omitempty"`
-	// deploy_env is empty for every env.
-	DeployEnv string `protobuf:"bytes,3,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
+	// env is empty for every env.
+	Env string `protobuf:"bytes,3,opt,name=env,proto3" json:"env,omitempty"`
 	// all_stored sets since to the start of the stored data, the last 2 weeks
 	// when nothing is stored.
-	AllStored     bool `protobuf:"varint,4,opt,name=all_stored,json=allStored,proto3" json:"all_stored,omitempty"`
+	AllStored bool `protobuf:"varint,4,opt,name=all_stored,json=allStored,proto3" json:"all_stored,omitempty"`
+	// worker_name keeps only the types that worker runs, matched as written.
+	// Empty is every type, FPP-011-R07.
+	WorkerName string `protobuf:"bytes,5,opt,name=worker_name,json=workerName,proto3" json:"worker_name,omitempty"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,6,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -423,9 +447,9 @@ func (x *ListWorkflowTypesRequest) GetUntil() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *ListWorkflowTypesRequest) GetDeployEnv() string {
+func (x *ListWorkflowTypesRequest) GetEnv() string {
 	if x != nil {
-		return x.DeployEnv
+		return x.Env
 	}
 	return ""
 }
@@ -435,6 +459,20 @@ func (x *ListWorkflowTypesRequest) GetAllStored() bool {
 		return x.AllStored
 	}
 	return false
+}
+
+func (x *ListWorkflowTypesRequest) GetWorkerName() string {
+	if x != nil {
+		return x.WorkerName
+	}
+	return ""
+}
+
+func (x *ListWorkflowTypesRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
 }
 
 type ListWorkflowTypesResponse struct {
@@ -447,7 +485,12 @@ type ListWorkflowTypesResponse struct {
 	// data_since is where the stored data starts: the first event of the oldest
 	// stored history or the start of the oldest attempt, whichever is earlier.
 	// Left out when nothing is stored.
-	DataSince     *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=data_since,json=dataSince,proto3" json:"data_since,omitempty"`
+	DataSince *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=data_since,json=dataSince,proto3" json:"data_since,omitempty"`
+	// worker_names is every worker name on a queue of the range and the env,
+	// sorted, whatever worker_name asks for.
+	WorkerNames []string `protobuf:"bytes,6,rep,name=worker_names,json=workerNames,proto3" json:"worker_names,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,7,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -513,6 +556,20 @@ func (x *ListWorkflowTypesResponse) GetCost() *CostSummary {
 func (x *ListWorkflowTypesResponse) GetDataSince() *timestamppb.Timestamp {
 	if x != nil {
 		return x.DataSince
+	}
+	return nil
+}
+
+func (x *ListWorkflowTypesResponse) GetWorkerNames() []string {
+	if x != nil {
+		return x.WorkerNames
+	}
+	return nil
+}
+
+func (x *ListWorkflowTypesResponse) GetPage() *PageResponse {
+	if x != nil {
+		return x.Page
 	}
 	return nil
 }
@@ -682,9 +739,11 @@ type GetWorkflowTypeRequest struct {
 	WorkflowType string                 `protobuf:"bytes,1,opt,name=workflow_type,json=workflowType,proto3" json:"workflow_type,omitempty"`
 	Since        *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=since,proto3" json:"since,omitempty"`
 	Until        *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=until,proto3" json:"until,omitempty"`
-	DeployEnv    string                 `protobuf:"bytes,4,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
+	Env          string                 `protobuf:"bytes,4,opt,name=env,proto3" json:"env,omitempty"`
 	// all_stored is as in ListWorkflowTypesRequest.
-	AllStored     bool `protobuf:"varint,5,opt,name=all_stored,json=allStored,proto3" json:"all_stored,omitempty"`
+	AllStored bool `protobuf:"varint,5,opt,name=all_stored,json=allStored,proto3" json:"all_stored,omitempty"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,6,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -740,9 +799,9 @@ func (x *GetWorkflowTypeRequest) GetUntil() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *GetWorkflowTypeRequest) GetDeployEnv() string {
+func (x *GetWorkflowTypeRequest) GetEnv() string {
 	if x != nil {
-		return x.DeployEnv
+		return x.Env
 	}
 	return ""
 }
@@ -752,6 +811,13 @@ func (x *GetWorkflowTypeRequest) GetAllStored() bool {
 		return x.AllStored
 	}
 	return false
+}
+
+func (x *GetWorkflowTypeRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
 }
 
 type GetWorkflowTypeResponse struct {
@@ -764,7 +830,9 @@ type GetWorkflowTypeResponse struct {
 	Since    *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=since,proto3" json:"since,omitempty"`
 	Until    *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=until,proto3" json:"until,omitempty"`
 	// data_since is as in ListWorkflowTypesResponse.
-	DataSince     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=data_since,json=dataSince,proto3" json:"data_since,omitempty"`
+	DataSince *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=data_since,json=dataSince,proto3" json:"data_since,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,8,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -848,11 +916,18 @@ func (x *GetWorkflowTypeResponse) GetDataSince() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *GetWorkflowTypeResponse) GetPage() *PageResponse {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 var File_flowrensic_v1_workflow_types_proto protoreflect.FileDescriptor
 
 const file_flowrensic_v1_workflow_types_proto_rawDesc = "" +
 	"\n" +
-	"\"flowrensic/v1/workflow_types.proto\x12\rflowrensic.v1\x1a$flowrensic/v1/activity_metrics.proto\x1a\x1bflowrensic/v1/finding.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\x99\x06\n" +
+	"\"flowrensic/v1/workflow_types.proto\x12\rflowrensic.v1\x1a\x18flowrensic/v1/page.proto\x1a$flowrensic/v1/activity_metrics.proto\x1a\x1bflowrensic/v1/finding.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xdd\x06\n" +
 	"\x0fWorkflowTypeRow\x12#\n" +
 	"\rworkflow_type\x18\x01 \x01(\tR\fworkflowType\x12\x1d\n" +
 	"\n" +
@@ -881,7 +956,10 @@ const file_flowrensic_v1_workflow_types_proto_rawDesc = "" +
 	"\x0fbillable_events\x18\x12 \x01(\x03R\x0ebillableEvents\x12(\n" +
 	"\x10billable_per_run\x18\x13 \x01(\x01R\x0ebillablePerRun\x12!\n" +
 	"\fhas_billable\x18\x14 \x01(\bR\vhasBillable\x12\x19\n" +
-	"\bcost_usd\x18\x15 \x01(\x01R\acostUsd\"\xd7\x03\n" +
+	"\bcost_usd\x18\x15 \x01(\x01R\acostUsd\x12\x1f\n" +
+	"\vtask_queues\x18\x16 \x03(\tR\n" +
+	"taskQueues\x12!\n" +
+	"\fworker_names\x18\x17 \x03(\tR\vworkerNames\"\xd7\x03\n" +
 	"\vCostSummary\x121\n" +
 	"\x15price_per_million_usd\x18\x01 \x01(\x01R\x12pricePerMillionUsd\x12%\n" +
 	"\x0ewindow_seconds\x18\x02 \x01(\x03R\rwindowSeconds\x12&\n" +
@@ -894,21 +972,25 @@ const file_flowrensic_v1_workflow_types_proto_rawDesc = "" +
 	"\x13last_window_covered\x18\b \x01(\bR\x11lastWindowCovered\x12;\n" +
 	"\x1alast_three_windows_covered\x18\t \x01(\bR\x17lastThreeWindowsCovered\x122\n" +
 	"\x15window_before_covered\x18\n" +
-	" \x01(\bR\x13windowBeforeCovered\"\xbc\x01\n" +
+	" \x01(\bR\x13windowBeforeCovered\"\x80\x02\n" +
 	"\x18ListWorkflowTypesRequest\x120\n" +
 	"\x05since\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\x05since\x120\n" +
-	"\x05until\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\x05until\x12\x1d\n" +
+	"\x05until\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\x05until\x12\x10\n" +
+	"\x03env\x18\x03 \x01(\tR\x03env\x12\x1d\n" +
 	"\n" +
-	"deploy_env\x18\x03 \x01(\tR\tdeployEnv\x12\x1d\n" +
-	"\n" +
-	"all_stored\x18\x04 \x01(\bR\tallStored\"\xa0\x02\n" +
+	"all_stored\x18\x04 \x01(\bR\tallStored\x12\x1f\n" +
+	"\vworker_name\x18\x05 \x01(\tR\n" +
+	"workerName\x12.\n" +
+	"\x04page\x18\x06 \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04page\"\xf4\x02\n" +
 	"\x19ListWorkflowTypesResponse\x124\n" +
 	"\x05types\x18\x01 \x03(\v2\x1e.flowrensic.v1.WorkflowTypeRowR\x05types\x120\n" +
 	"\x05since\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\x05since\x120\n" +
 	"\x05until\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x05until\x12.\n" +
 	"\x04cost\x18\x04 \x01(\v2\x1a.flowrensic.v1.CostSummaryR\x04cost\x129\n" +
 	"\n" +
-	"data_since\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tdataSince\"\xad\x01\n" +
+	"data_since\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tdataSince\x12!\n" +
+	"\fworker_names\x18\x06 \x03(\tR\vworkerNames\x12/\n" +
+	"\x04page\x18\a \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04page\"\xad\x01\n" +
 	"\x0fWorkflowMessage\x12\x12\n" +
 	"\x04kind\x18\x01 \x01(\tR\x04kind\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
@@ -920,15 +1002,15 @@ const file_flowrensic_v1_workflow_types_proto_rawDesc = "" +
 	"\x05stats\x18\x01 \x01(\v2\x1c.flowrensic.v1.ActivityStatsR\x05stats\x12$\n" +
 	"\x0ecalls_per_hour\x18\x02 \x01(\x01R\fcallsPerHour\x12\x14\n" +
 	"\x05share\x18\x03 \x01(\x01R\x05share\x12\x1b\n" +
-	"\thas_share\x18\x04 \x01(\bR\bhasShare\"\xdf\x01\n" +
+	"\thas_share\x18\x04 \x01(\bR\bhasShare\"\x82\x02\n" +
 	"\x16GetWorkflowTypeRequest\x12#\n" +
 	"\rworkflow_type\x18\x01 \x01(\tR\fworkflowType\x120\n" +
 	"\x05since\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\x05since\x120\n" +
-	"\x05until\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x05until\x12\x1d\n" +
+	"\x05until\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\x05until\x12\x10\n" +
+	"\x03env\x18\x04 \x01(\tR\x03env\x12\x1d\n" +
 	"\n" +
-	"deploy_env\x18\x04 \x01(\tR\tdeployEnv\x12\x1d\n" +
-	"\n" +
-	"all_stored\x18\x05 \x01(\bR\tallStored\"\x9b\x03\n" +
+	"all_stored\x18\x05 \x01(\bR\tallStored\x12.\n" +
+	"\x04page\x18\x06 \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04page\"\xcc\x03\n" +
 	"\x17GetWorkflowTypeResponse\x120\n" +
 	"\x03row\x18\x01 \x01(\v2\x1e.flowrensic.v1.WorkflowTypeRowR\x03row\x12:\n" +
 	"\bmessages\x18\x02 \x03(\v2\x1e.flowrensic.v1.WorkflowMessageR\bmessages\x12?\n" +
@@ -939,7 +1021,8 @@ const file_flowrensic_v1_workflow_types_proto_rawDesc = "" +
 	"\x05since\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x05since\x120\n" +
 	"\x05until\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\x05until\x129\n" +
 	"\n" +
-	"data_since\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tdataSinceB\xbb\x01\n" +
+	"data_since\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tdataSince\x12/\n" +
+	"\x04page\x18\b \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04pageB\xbb\x01\n" +
 	"\x11com.flowrensic.v1B\x12WorkflowTypesProtoP\x01Z=go.flowrensic.com/sdk/internal/gen/flowrensic/v1;flowrensicv1\xa2\x02\x03FXX\xaa\x02\rFlowrensic.V1\xca\x02\rFlowrensic\\V1\xe2\x02\x19Flowrensic\\V1\\GPBMetadata\xea\x02\x0eFlowrensic::V1b\x06proto3"
 
 var (
@@ -965,33 +1048,39 @@ var file_flowrensic_v1_workflow_types_proto_goTypes = []any{
 	(*GetWorkflowTypeRequest)(nil),    // 6: flowrensic.v1.GetWorkflowTypeRequest
 	(*GetWorkflowTypeResponse)(nil),   // 7: flowrensic.v1.GetWorkflowTypeResponse
 	(*timestamppb.Timestamp)(nil),     // 8: google.protobuf.Timestamp
-	(*ActivityStats)(nil),             // 9: flowrensic.v1.ActivityStats
-	(*Finding)(nil),                   // 10: flowrensic.v1.Finding
+	(*PageRequest)(nil),               // 9: flowrensic.v1.PageRequest
+	(*PageResponse)(nil),              // 10: flowrensic.v1.PageResponse
+	(*ActivityStats)(nil),             // 11: flowrensic.v1.ActivityStats
+	(*Finding)(nil),                   // 12: flowrensic.v1.Finding
 }
 var file_flowrensic_v1_workflow_types_proto_depIdxs = []int32{
 	8,  // 0: flowrensic.v1.WorkflowTypeRow.oldest_open_started_at:type_name -> google.protobuf.Timestamp
 	8,  // 1: flowrensic.v1.ListWorkflowTypesRequest.since:type_name -> google.protobuf.Timestamp
 	8,  // 2: flowrensic.v1.ListWorkflowTypesRequest.until:type_name -> google.protobuf.Timestamp
-	0,  // 3: flowrensic.v1.ListWorkflowTypesResponse.types:type_name -> flowrensic.v1.WorkflowTypeRow
-	8,  // 4: flowrensic.v1.ListWorkflowTypesResponse.since:type_name -> google.protobuf.Timestamp
-	8,  // 5: flowrensic.v1.ListWorkflowTypesResponse.until:type_name -> google.protobuf.Timestamp
-	1,  // 6: flowrensic.v1.ListWorkflowTypesResponse.cost:type_name -> flowrensic.v1.CostSummary
-	8,  // 7: flowrensic.v1.ListWorkflowTypesResponse.data_since:type_name -> google.protobuf.Timestamp
-	9,  // 8: flowrensic.v1.WorkflowActivity.stats:type_name -> flowrensic.v1.ActivityStats
-	8,  // 9: flowrensic.v1.GetWorkflowTypeRequest.since:type_name -> google.protobuf.Timestamp
-	8,  // 10: flowrensic.v1.GetWorkflowTypeRequest.until:type_name -> google.protobuf.Timestamp
-	0,  // 11: flowrensic.v1.GetWorkflowTypeResponse.row:type_name -> flowrensic.v1.WorkflowTypeRow
-	4,  // 12: flowrensic.v1.GetWorkflowTypeResponse.messages:type_name -> flowrensic.v1.WorkflowMessage
-	5,  // 13: flowrensic.v1.GetWorkflowTypeResponse.activities:type_name -> flowrensic.v1.WorkflowActivity
-	10, // 14: flowrensic.v1.GetWorkflowTypeResponse.findings:type_name -> flowrensic.v1.Finding
-	8,  // 15: flowrensic.v1.GetWorkflowTypeResponse.since:type_name -> google.protobuf.Timestamp
-	8,  // 16: flowrensic.v1.GetWorkflowTypeResponse.until:type_name -> google.protobuf.Timestamp
-	8,  // 17: flowrensic.v1.GetWorkflowTypeResponse.data_since:type_name -> google.protobuf.Timestamp
-	18, // [18:18] is the sub-list for method output_type
-	18, // [18:18] is the sub-list for method input_type
-	18, // [18:18] is the sub-list for extension type_name
-	18, // [18:18] is the sub-list for extension extendee
-	0,  // [0:18] is the sub-list for field type_name
+	9,  // 3: flowrensic.v1.ListWorkflowTypesRequest.page:type_name -> flowrensic.v1.PageRequest
+	0,  // 4: flowrensic.v1.ListWorkflowTypesResponse.types:type_name -> flowrensic.v1.WorkflowTypeRow
+	8,  // 5: flowrensic.v1.ListWorkflowTypesResponse.since:type_name -> google.protobuf.Timestamp
+	8,  // 6: flowrensic.v1.ListWorkflowTypesResponse.until:type_name -> google.protobuf.Timestamp
+	1,  // 7: flowrensic.v1.ListWorkflowTypesResponse.cost:type_name -> flowrensic.v1.CostSummary
+	8,  // 8: flowrensic.v1.ListWorkflowTypesResponse.data_since:type_name -> google.protobuf.Timestamp
+	10, // 9: flowrensic.v1.ListWorkflowTypesResponse.page:type_name -> flowrensic.v1.PageResponse
+	11, // 10: flowrensic.v1.WorkflowActivity.stats:type_name -> flowrensic.v1.ActivityStats
+	8,  // 11: flowrensic.v1.GetWorkflowTypeRequest.since:type_name -> google.protobuf.Timestamp
+	8,  // 12: flowrensic.v1.GetWorkflowTypeRequest.until:type_name -> google.protobuf.Timestamp
+	9,  // 13: flowrensic.v1.GetWorkflowTypeRequest.page:type_name -> flowrensic.v1.PageRequest
+	0,  // 14: flowrensic.v1.GetWorkflowTypeResponse.row:type_name -> flowrensic.v1.WorkflowTypeRow
+	4,  // 15: flowrensic.v1.GetWorkflowTypeResponse.messages:type_name -> flowrensic.v1.WorkflowMessage
+	5,  // 16: flowrensic.v1.GetWorkflowTypeResponse.activities:type_name -> flowrensic.v1.WorkflowActivity
+	12, // 17: flowrensic.v1.GetWorkflowTypeResponse.findings:type_name -> flowrensic.v1.Finding
+	8,  // 18: flowrensic.v1.GetWorkflowTypeResponse.since:type_name -> google.protobuf.Timestamp
+	8,  // 19: flowrensic.v1.GetWorkflowTypeResponse.until:type_name -> google.protobuf.Timestamp
+	8,  // 20: flowrensic.v1.GetWorkflowTypeResponse.data_since:type_name -> google.protobuf.Timestamp
+	10, // 21: flowrensic.v1.GetWorkflowTypeResponse.page:type_name -> flowrensic.v1.PageResponse
+	22, // [22:22] is the sub-list for method output_type
+	22, // [22:22] is the sub-list for method input_type
+	22, // [22:22] is the sub-list for extension type_name
+	22, // [22:22] is the sub-list for extension extendee
+	0,  // [0:22] is the sub-list for field type_name
 }
 
 func init() { file_flowrensic_v1_workflow_types_proto_init() }
@@ -999,6 +1088,7 @@ func file_flowrensic_v1_workflow_types_proto_init() {
 	if File_flowrensic_v1_workflow_types_proto != nil {
 		return
 	}
+	file_flowrensic_v1_page_proto_init()
 	file_flowrensic_v1_activity_metrics_proto_init()
 	file_flowrensic_v1_finding_proto_init()
 	type x struct{}

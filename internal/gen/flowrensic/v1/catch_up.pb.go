@@ -23,7 +23,9 @@ const (
 )
 
 type GetCatchUpRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,1,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -58,13 +60,20 @@ func (*GetCatchUpRequest) Descriptor() ([]byte, []int) {
 	return file_flowrensic_v1_catch_up_proto_rawDescGZIP(), []int{0}
 }
 
+func (x *GetCatchUpRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 // The last catch-up of one namespace: the pulling of old runs after the
 // puller fell behind, as after a deploy, FPP-138-R09.
 type NamespaceCatchUp struct {
 	state       protoimpl.MessageState `protogen:"open.v1"`
 	NamespaceId string                 `protobuf:"bytes,1,opt,name=namespace_id,json=namespaceId,proto3" json:"namespace_id,omitempty"`
 	Namespace   string                 `protobuf:"bytes,2,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	DeployEnv   string                 `protobuf:"bytes,3,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
+	Env         string                 `protobuf:"bytes,3,opt,name=env,proto3" json:"env,omitempty"`
 	// catching_up is true from a poll that left runs for a later one until a
 	// poll takes every run it found with fetches to spare.
 	CatchingUp bool                   `protobuf:"varint,4,opt,name=catching_up,json=catchingUp,proto3" json:"catching_up,omitempty"`
@@ -143,9 +152,9 @@ func (x *NamespaceCatchUp) GetNamespace() string {
 	return ""
 }
 
-func (x *NamespaceCatchUp) GetDeployEnv() string {
+func (x *NamespaceCatchUp) GetEnv() string {
 	if x != nil {
-		return x.DeployEnv
+		return x.Env
 	}
 	return ""
 }
@@ -248,7 +257,9 @@ type GetCatchUpResponse struct {
 	Now *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=now,proto3" json:"now,omitempty"`
 	// total is the runs the overall percent counts, pulled plus backlog, left
 	// out while the backlog is not known.
-	Total         *int64 `protobuf:"varint,7,opt,name=total,proto3,oneof" json:"total,omitempty"`
+	Total *int64 `protobuf:"varint,7,opt,name=total,proto3,oneof" json:"total,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,8,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -332,17 +343,24 @@ func (x *GetCatchUpResponse) GetTotal() int64 {
 	return 0
 }
 
+func (x *GetCatchUpResponse) GetPage() *PageResponse {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 var File_flowrensic_v1_catch_up_proto protoreflect.FileDescriptor
 
 const file_flowrensic_v1_catch_up_proto_rawDesc = "" +
 	"\n" +
-	"\x1cflowrensic/v1/catch_up.proto\x12\rflowrensic.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x13\n" +
-	"\x11GetCatchUpRequest\"\x99\x05\n" +
+	"\x1cflowrensic/v1/catch_up.proto\x12\rflowrensic.v1\x1a\x18flowrensic/v1/page.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"C\n" +
+	"\x11GetCatchUpRequest\x12.\n" +
+	"\x04page\x18\x01 \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04page\"\x8c\x05\n" +
 	"\x10NamespaceCatchUp\x12!\n" +
 	"\fnamespace_id\x18\x01 \x01(\tR\vnamespaceId\x12\x1c\n" +
-	"\tnamespace\x18\x02 \x01(\tR\tnamespace\x12\x1d\n" +
-	"\n" +
-	"deploy_env\x18\x03 \x01(\tR\tdeployEnv\x12\x1f\n" +
+	"\tnamespace\x18\x02 \x01(\tR\tnamespace\x12\x10\n" +
+	"\x03env\x18\x03 \x01(\tR\x03env\x12\x1f\n" +
 	"\vcatching_up\x18\x04 \x01(\bR\n" +
 	"catchingUp\x129\n" +
 	"\n" +
@@ -365,7 +383,7 @@ const file_flowrensic_v1_catch_up_proto_rawDesc = "" +
 	"\n" +
 	"\b_backlogB\x0f\n" +
 	"\r_percent_doneB\b\n" +
-	"\x06_total\"\xe2\x02\n" +
+	"\x06_total\"\x93\x03\n" +
 	"\x12GetCatchUpResponse\x12\x1f\n" +
 	"\vcatching_up\x18\x01 \x01(\bR\n" +
 	"catchingUp\x12\x1d\n" +
@@ -376,7 +394,8 @@ const file_flowrensic_v1_catch_up_proto_rawDesc = "" +
 	"namespaces\x18\x05 \x03(\v2\x1f.flowrensic.v1.NamespaceCatchUpR\n" +
 	"namespaces\x12,\n" +
 	"\x03now\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\x03now\x12\x19\n" +
-	"\x05total\x18\a \x01(\x03H\x02R\x05total\x88\x01\x01B\n" +
+	"\x05total\x18\a \x01(\x03H\x02R\x05total\x88\x01\x01\x12/\n" +
+	"\x04page\x18\b \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04pageB\n" +
 	"\n" +
 	"\b_backlogB\x0f\n" +
 	"\r_percent_doneB\b\n" +
@@ -400,21 +419,25 @@ var file_flowrensic_v1_catch_up_proto_goTypes = []any{
 	(*GetCatchUpRequest)(nil),     // 0: flowrensic.v1.GetCatchUpRequest
 	(*NamespaceCatchUp)(nil),      // 1: flowrensic.v1.NamespaceCatchUp
 	(*GetCatchUpResponse)(nil),    // 2: flowrensic.v1.GetCatchUpResponse
-	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
+	(*PageRequest)(nil),           // 3: flowrensic.v1.PageRequest
+	(*timestamppb.Timestamp)(nil), // 4: google.protobuf.Timestamp
+	(*PageResponse)(nil),          // 5: flowrensic.v1.PageResponse
 }
 var file_flowrensic_v1_catch_up_proto_depIdxs = []int32{
-	3, // 0: flowrensic.v1.NamespaceCatchUp.started_at:type_name -> google.protobuf.Timestamp
-	3, // 1: flowrensic.v1.NamespaceCatchUp.ended_at:type_name -> google.protobuf.Timestamp
-	3, // 2: flowrensic.v1.NamespaceCatchUp.counted_at:type_name -> google.protobuf.Timestamp
-	3, // 3: flowrensic.v1.NamespaceCatchUp.ends_at:type_name -> google.protobuf.Timestamp
-	3, // 4: flowrensic.v1.GetCatchUpResponse.ends_at:type_name -> google.protobuf.Timestamp
-	1, // 5: flowrensic.v1.GetCatchUpResponse.namespaces:type_name -> flowrensic.v1.NamespaceCatchUp
-	3, // 6: flowrensic.v1.GetCatchUpResponse.now:type_name -> google.protobuf.Timestamp
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	3, // 0: flowrensic.v1.GetCatchUpRequest.page:type_name -> flowrensic.v1.PageRequest
+	4, // 1: flowrensic.v1.NamespaceCatchUp.started_at:type_name -> google.protobuf.Timestamp
+	4, // 2: flowrensic.v1.NamespaceCatchUp.ended_at:type_name -> google.protobuf.Timestamp
+	4, // 3: flowrensic.v1.NamespaceCatchUp.counted_at:type_name -> google.protobuf.Timestamp
+	4, // 4: flowrensic.v1.NamespaceCatchUp.ends_at:type_name -> google.protobuf.Timestamp
+	4, // 5: flowrensic.v1.GetCatchUpResponse.ends_at:type_name -> google.protobuf.Timestamp
+	1, // 6: flowrensic.v1.GetCatchUpResponse.namespaces:type_name -> flowrensic.v1.NamespaceCatchUp
+	4, // 7: flowrensic.v1.GetCatchUpResponse.now:type_name -> google.protobuf.Timestamp
+	5, // 8: flowrensic.v1.GetCatchUpResponse.page:type_name -> flowrensic.v1.PageResponse
+	9, // [9:9] is the sub-list for method output_type
+	9, // [9:9] is the sub-list for method input_type
+	9, // [9:9] is the sub-list for extension type_name
+	9, // [9:9] is the sub-list for extension extendee
+	0, // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_flowrensic_v1_catch_up_proto_init() }
@@ -422,6 +445,7 @@ func file_flowrensic_v1_catch_up_proto_init() {
 	if File_flowrensic_v1_catch_up_proto != nil {
 		return
 	}
+	file_flowrensic_v1_page_proto_init()
 	file_flowrensic_v1_catch_up_proto_msgTypes[1].OneofWrappers = []any{}
 	file_flowrensic_v1_catch_up_proto_msgTypes[2].OneofWrappers = []any{}
 	type x struct{}

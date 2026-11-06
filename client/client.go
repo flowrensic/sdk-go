@@ -17,31 +17,40 @@ import (
 	"go.flowrensic.com/sdk/internal/gen/flowrensic/v1/flowrensicv1connect"
 )
 
-// EnvKeyHeader is the header every ingest call carries the env's access key in.
-const EnvKeyHeader = "Flowrensic-Env-Key"
+// CurrentEnvHeader is the header every Flowrensic call carries the env in.
+const CurrentEnvHeader = "Flowrensic-Current-Env"
 
-// DefaultTimeout is how long the hello may take when Options carries no
-// Timeout.
-const DefaultTimeout = 5 * time.Second
+// EnvAccessKeyHeader is the header every Flowrensic call carries the env access key in.
+const EnvAccessKeyHeader = "Flowrensic-Env-Access-Key"
+
+// CurrentEphemeralRunHeader is the header every Flowrensic call carries the ephemeral run in.
+const CurrentEphemeralRunHeader = "Flowrensic-Current-Ephemeral-Run"
+
+// DefaultTimeoutMs is how long the hello may take, in milliseconds, when
+// Options carries no TimeoutMs.
+const DefaultTimeoutMs = 5000
 
 // Options is what a worker tells Flowrensic about itself.
 type Options struct {
-	// BaseURL is the Flowrensic server, such as http://flowrensic:8080.
-	BaseURL string
-	// EnvKey is the access key of the env, sent on every ingest call.
-	EnvKey string
-	// DeployEnv is the env this worker runs in, as the Flowrensic env list
-	// names it.
-	DeployEnv string
-	// EnvInstanceID is which run of that env this is. Empty, it has none.
-	EnvInstanceID string
-	// WorkerID names this worker among the workers of the env instance.
+	// ServerBaseURL is the Flowrensic server, such as http://flowrensic:8080.
+	ServerBaseURL string
+	// CurrentEnv is the env this worker runs in, as the Flowrensic env list
+	// names it, sent in the Flowrensic-Current-Env header of every call.
+	CurrentEnv string
+	// EnvAccessKey is the access key of that env, sent in the
+	// Flowrensic-Env-Access-Key header of every call.
+	EnvAccessKey string
+	// CurrentEphemeralRun is which run of that env this is, sent in the
+	// Flowrensic-Current-Ephemeral-Run header of every call. Empty, it has none.
+	CurrentEphemeralRun string
+	// WorkerID names this worker among the workers of the ephemeral run.
 	// Empty, the host name and the process id joined by a dash.
 	WorkerID string
 	// Version is the version this worker serves. Empty, none.
 	Version string
-	// Timeout is how long the hello may take. Zero, DefaultTimeout.
-	Timeout time.Duration
+	// TimeoutMs is how long the hello may take, in milliseconds. Zero,
+	// DefaultTimeoutMs.
+	TimeoutMs int
 	// HTTPClient sends the calls. Nil, http.DefaultClient.
 	HTTPClient *http.Client
 }
@@ -63,18 +72,18 @@ type Client struct {
 	answer  Answer
 }
 
-// Connect says hello to the Flowrensic server, so the env instance and the
+// Connect says hello to the Flowrensic server, so the ephemeral run and the
 // worker show up there, and returns the client. A refused hello or one with
 // no answer returns the error, whose code connect.CodeOf reads.
 func Connect(ctx context.Context, options Options) (*Client, error) {
-	if options.BaseURL == "" {
-		return nil, errors.New("flowrensic: BaseURL is required")
+	if options.ServerBaseURL == "" {
+		return nil, errors.New("flowrensic: ServerBaseURL is required")
 	}
 	if options.WorkerID == "" {
 		options.WorkerID = defaultWorkerID()
 	}
-	if options.Timeout <= 0 {
-		options.Timeout = DefaultTimeout
+	if options.TimeoutMs <= 0 {
+		options.TimeoutMs = DefaultTimeoutMs
 	}
 	httpClient := options.HTTPClient
 	if httpClient == nil {
@@ -84,8 +93,8 @@ func Connect(ctx context.Context, options Options) (*Client, error) {
 		options: options,
 		ingest: flowrensicv1connect.NewIngestServiceClient(
 			httpClient,
-			strings.TrimRight(options.BaseURL, "/"),
-			connect.WithInterceptors(envKeyInterceptor(options.EnvKey)),
+			strings.TrimRight(options.ServerBaseURL, "/"),
+			connect.WithInterceptors(contextInterceptor(options)),
 		),
 	}
 	if err := c.hello(ctx); err != nil {
@@ -101,13 +110,11 @@ func (c *Client) WorkerID() string { return c.options.WorkerID }
 func (c *Client) Answer() Answer { return c.answer }
 
 func (c *Client) hello(ctx context.Context) error {
-	ctx, cancel := context.WithTimeout(ctx, c.options.Timeout)
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(c.options.TimeoutMs)*time.Millisecond)
 	defer cancel()
-	res, err := c.ingest.EnvInstanceHandshake(ctx, connect.NewRequest(&flowrensicv1.EnvInstanceHandshakeRequest{
-		DeployEnv:     c.options.DeployEnv,
-		EnvInstanceId: c.options.EnvInstanceID,
-		WorkerId:      c.options.WorkerID,
-		Version:       c.options.Version,
+	res, err := c.ingest.EphemeralRunHandshake(ctx, connect.NewRequest(&flowrensicv1.EphemeralRunHandshakeRequest{
+		WorkerId: c.options.WorkerID,
+		Version:  c.options.Version,
 	}))
 	if err != nil {
 		return fmt.Errorf("flowrensic: hello: %w", err)
@@ -120,14 +127,20 @@ func (c *Client) hello(ctx context.Context) error {
 	return nil
 }
 
-// envKeyInterceptor puts key on every call of IngestService. An empty key
-// sends none.
-func envKeyInterceptor(key string) connect.UnaryInterceptorFunc {
-	ingest := "/" + flowrensicv1connect.IngestServiceName + "/"
+// contextInterceptor puts the env, its access key and the ephemeral run of
+// options in the headers of every call. An empty value sends no header.
+func contextInterceptor(options Options) connect.UnaryInterceptorFunc {
+	headers := [][2]string{
+		{CurrentEnvHeader, options.CurrentEnv},
+		{EnvAccessKeyHeader, options.EnvAccessKey},
+		{CurrentEphemeralRunHeader, options.CurrentEphemeralRun},
+	}
 	return func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
-			if key != "" && strings.HasPrefix(req.Spec().Procedure, ingest) {
-				req.Header().Set(EnvKeyHeader, key)
+			for _, h := range headers {
+				if h[1] != "" {
+					req.Header().Set(h[0], h[1])
+				}
 			}
 			return next(ctx, req)
 		}

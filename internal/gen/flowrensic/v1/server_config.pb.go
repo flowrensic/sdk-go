@@ -154,7 +154,7 @@ func (x *ConfigField) GetIgnored() string {
 	return ""
 }
 
-// One entry of FLOWRENSIC_ENVS, a field per value the entry holds.
+// One entry of FLOWRENSIC_KNOWN_ENVS, a field per value the entry holds.
 type ConfigEnv struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`

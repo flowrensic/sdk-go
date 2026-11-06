@@ -278,10 +278,8 @@ func (x *History) GetEvents() []*Event {
 }
 
 type IngestHistoryRequest struct {
-	state   protoimpl.MessageState `protogen:"open.v1"`
-	History *History               `protobuf:"bytes,1,opt,name=history,proto3" json:"history,omitempty"`
-	// The env the history is sent for. The call carries the key of that env.
-	DeployEnv     string `protobuf:"bytes,2,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	History       *History               `protobuf:"bytes,1,opt,name=history,proto3" json:"history,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -321,13 +319,6 @@ func (x *IngestHistoryRequest) GetHistory() *History {
 		return x.History
 	}
 	return nil
-}
-
-func (x *IngestHistoryRequest) GetDeployEnv() string {
-	if x != nil {
-		return x.DeployEnv
-	}
-	return ""
 }
 
 type IngestHistoryResponse struct {
@@ -406,11 +397,9 @@ const file_flowrensic_v1_workflow_history_proto_rawDesc = "" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\x12-\n" +
 	"\x06engine\x18\x02 \x01(\x0e2\x15.flowrensic.v1.EngineR\x06engine\x12\x1c\n" +
 	"\ttruncated\x18\x03 \x01(\bR\ttruncated\x12,\n" +
-	"\x06events\x18\x04 \x03(\v2\x14.flowrensic.v1.EventR\x06events\"g\n" +
+	"\x06events\x18\x04 \x03(\v2\x14.flowrensic.v1.EventR\x06events\"[\n" +
 	"\x14IngestHistoryRequest\x120\n" +
-	"\ahistory\x18\x01 \x01(\v2\x16.flowrensic.v1.HistoryR\ahistory\x12\x1d\n" +
-	"\n" +
-	"deploy_env\x18\x02 \x01(\tR\tdeployEnv\"b\n" +
+	"\ahistory\x18\x01 \x01(\v2\x16.flowrensic.v1.HistoryR\ahistoryJ\x04\b\x02\x10\x03R\vcurrent_env\"b\n" +
 	"\x15IngestHistoryResponse\x12\x15\n" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\x12\x16\n" +
 	"\x06events\x18\x02 \x01(\x05R\x06events\x12\x1a\n" +

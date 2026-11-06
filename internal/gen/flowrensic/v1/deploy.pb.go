@@ -217,7 +217,6 @@ func (x *Deployment) GetLongestOverlapMs() int64 {
 type IngestDeployStageRequest struct {
 	state             protoimpl.MessageState `protogen:"open.v1"`
 	DeployId          string                 `protobuf:"bytes,1,opt,name=deploy_id,json=deployId,proto3" json:"deploy_id,omitempty"`
-	Env               string                 `protobuf:"bytes,2,opt,name=env,proto3" json:"env,omitempty"`
 	Stage             string                 `protobuf:"bytes,3,opt,name=stage,proto3" json:"stage,omitempty"`
 	DeclaredStages    []string               `protobuf:"bytes,4,rep,name=declared_stages,json=declaredStages,proto3" json:"declared_stages,omitempty"`
 	RollingOutVersion string                 `protobuf:"bytes,5,opt,name=rolling_out_version,json=rollingOutVersion,proto3" json:"rolling_out_version,omitempty"`
@@ -262,13 +261,6 @@ func (*IngestDeployStageRequest) Descriptor() ([]byte, []int) {
 func (x *IngestDeployStageRequest) GetDeployId() string {
 	if x != nil {
 		return x.DeployId
-	}
-	return ""
-}
-
-func (x *IngestDeployStageRequest) GetEnv() string {
-	if x != nil {
-		return x.Env
 	}
 	return ""
 }
@@ -565,16 +557,15 @@ const file_flowrensic_v1_deploy_proto_rawDesc = "" +
 	"\x06writes\x18\t \x03(\v2\x19.flowrensic.v1.StageWriteR\x06writes\x12F\n" +
 	"\x11overlap_opened_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\x0foverlapOpenedAt\x12,\n" +
-	"\x12longest_overlap_ms\x18\v \x01(\x03R\x10longestOverlapMs\"\x8d\x02\n" +
+	"\x12longest_overlap_ms\x18\v \x01(\x03R\x10longestOverlapMs\"\x8e\x02\n" +
 	"\x18IngestDeployStageRequest\x12\x1b\n" +
-	"\tdeploy_id\x18\x01 \x01(\tR\bdeployId\x12\x10\n" +
-	"\x03env\x18\x02 \x01(\tR\x03env\x12\x14\n" +
+	"\tdeploy_id\x18\x01 \x01(\tR\bdeployId\x12\x14\n" +
 	"\x05stage\x18\x03 \x01(\tR\x05stage\x12'\n" +
 	"\x0fdeclared_stages\x18\x04 \x03(\tR\x0edeclaredStages\x12.\n" +
 	"\x13rolling_out_version\x18\x05 \x01(\tR\x11rollingOutVersion\x12\x18\n" +
 	"\aoutcome\x18\x06 \x01(\tR\aoutcome\x129\n" +
 	"\n" +
-	"written_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\twrittenAt\"\x1b\n" +
+	"written_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\twrittenAtJ\x04\b\x02\x10\x03R\vcurrent_env\"\x1b\n" +
 	"\x19IngestDeployStageResponse\"3\n" +
 	"\x14GetDeploymentRequest\x12\x1b\n" +
 	"\tdeploy_id\x18\x01 \x01(\tR\bdeployId\"R\n" +

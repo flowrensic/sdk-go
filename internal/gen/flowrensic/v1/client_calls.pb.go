@@ -76,9 +76,11 @@ func (ClientCallOutcome) EnumDescriptor() ([]byte, []int) {
 // ClientCall is one query or signal a Temporal client made that threw, as the
 // client interceptor saw it.
 type ClientCall struct {
-	state       protoimpl.MessageState `protogen:"open.v1"`
-	NamespaceId string                 `protobuf:"bytes,1,opt,name=namespace_id,json=namespaceId,proto3" json:"namespace_id,omitempty"`
-	WorkflowId  string                 `protobuf:"bytes,2,opt,name=workflow_id,json=workflowId,proto3" json:"workflow_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// namespace is the name of the Temporal namespace of the client, found by
+	// the server under the env of the call as on ActivityAttempt.
+	Namespace  string `protobuf:"bytes,9,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	WorkflowId string `protobuf:"bytes,2,opt,name=workflow_id,json=workflowId,proto3" json:"workflow_id,omitempty"`
 	// Empty when the call named only the workflow id.
 	RunId string `protobuf:"bytes,3,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
 	// What was called: "query" or "signal".
@@ -122,9 +124,9 @@ func (*ClientCall) Descriptor() ([]byte, []int) {
 	return file_flowrensic_v1_client_calls_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *ClientCall) GetNamespaceId() string {
+func (x *ClientCall) GetNamespace() string {
 	if x != nil {
-		return x.NamespaceId
+		return x.Namespace
 	}
 	return ""
 }
@@ -288,8 +290,9 @@ func (x *IngestClientCallsResponse) GetAccepted() int32 {
 // answered in one minute, FPP-011-R02.
 type QueryCount struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
-	// namespace_id is the Flowrensic namespace id the worker was given.
-	NamespaceId string `protobuf:"bytes,1,opt,name=namespace_id,json=namespaceId,proto3" json:"namespace_id,omitempty"`
+	// namespace is the name of the Temporal namespace of the worker, found by
+	// the server under the env of the call as on ActivityAttempt.
+	Namespace string `protobuf:"bytes,8,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	// env is the env the worker runs in, empty to use the env of the namespace.
 	Env          string `protobuf:"bytes,2,opt,name=env,proto3" json:"env,omitempty"`
 	WorkflowType string `protobuf:"bytes,3,opt,name=workflow_type,json=workflowType,proto3" json:"workflow_type,omitempty"`
@@ -334,9 +337,9 @@ func (*QueryCount) Descriptor() ([]byte, []int) {
 	return file_flowrensic_v1_client_calls_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *QueryCount) GetNamespaceId() string {
+func (x *QueryCount) GetNamespace() string {
 	if x != nil {
-		return x.NamespaceId
+		return x.Namespace
 	}
 	return ""
 }
@@ -493,10 +496,10 @@ var File_flowrensic_v1_client_calls_proto protoreflect.FileDescriptor
 
 const file_flowrensic_v1_client_calls_proto_rawDesc = "" +
 	"\n" +
-	" flowrensic/v1/client_calls.proto\x12\rflowrensic.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xa1\x02\n" +
+	" flowrensic/v1/client_calls.proto\x12\rflowrensic.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb0\x02\n" +
 	"\n" +
-	"ClientCall\x12!\n" +
-	"\fnamespace_id\x18\x01 \x01(\tR\vnamespaceId\x12\x1f\n" +
+	"ClientCall\x12\x1c\n" +
+	"\tnamespace\x18\t \x01(\tR\tnamespace\x12\x1f\n" +
 	"\vworkflow_id\x18\x02 \x01(\tR\n" +
 	"workflowId\x12\x15\n" +
 	"\x06run_id\x18\x03 \x01(\tR\x05runId\x12\x12\n" +
@@ -505,24 +508,24 @@ const file_flowrensic_v1_client_calls_proto_rawDesc = "" +
 	"\n" +
 	"error_type\x18\x06 \x01(\tR\terrorType\x125\n" +
 	"\bended_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\aendedAt\x12\x12\n" +
-	"\x04name\x18\b \x01(\tR\x04name\"\x84\x01\n" +
+	"\x04name\x18\b \x01(\tR\x04nameJ\x04\b\x01\x10\x02R\fnamespace_id\"\x84\x01\n" +
 	"\x18IngestClientCallsRequest\x12/\n" +
 	"\x05calls\x18\x01 \x03(\v2\x19.flowrensic.v1.ClientCallR\x05calls\x12\x16\n" +
 	"\x06sender\x18\x02 \x01(\tR\x06sender\x12\x1f\n" +
 	"\vsend_number\x18\x03 \x01(\x03R\n" +
 	"sendNumber\"7\n" +
 	"\x19IngestClientCallsResponse\x12\x1a\n" +
-	"\baccepted\x18\x01 \x01(\x05R\baccepted\"\xed\x01\n" +
+	"\baccepted\x18\x01 \x01(\x05R\baccepted\"\xfc\x01\n" +
 	"\n" +
-	"QueryCount\x12!\n" +
-	"\fnamespace_id\x18\x01 \x01(\tR\vnamespaceId\x12\x10\n" +
+	"QueryCount\x12\x1c\n" +
+	"\tnamespace\x18\b \x01(\tR\tnamespace\x12\x10\n" +
 	"\x03env\x18\x02 \x01(\tR\x03env\x12#\n" +
 	"\rworkflow_type\x18\x03 \x01(\tR\fworkflowType\x12\x1d\n" +
 	"\n" +
 	"query_name\x18\x04 \x01(\tR\tqueryName\x12\x1a\n" +
 	"\banswered\x18\x05 \x01(\x03R\banswered\x12\x16\n" +
 	"\x06failed\x18\x06 \x01(\x03R\x06failed\x122\n" +
-	"\x06minute\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\x06minute\"\x86\x01\n" +
+	"\x06minute\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\x06minuteJ\x04\b\x01\x10\x02R\fnamespace_id\"\x86\x01\n" +
 	"\x18IngestQueryCountsRequest\x121\n" +
 	"\x06counts\x18\x01 \x03(\v2\x19.flowrensic.v1.QueryCountR\x06counts\x12\x16\n" +
 	"\x06sender\x18\x02 \x01(\tR\x06sender\x12\x1f\n" +

@@ -98,7 +98,7 @@ type ReplayHistory struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
 	RunId        string                 `protobuf:"bytes,1,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
 	WorkflowType string                 `protobuf:"bytes,2,opt,name=workflow_type,json=workflowType,proto3" json:"workflow_type,omitempty"`
-	DeployEnv    string                 `protobuf:"bytes,3,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
+	Env          string                 `protobuf:"bytes,3,opt,name=env,proto3" json:"env,omitempty"`
 	NamespaceId  string                 `protobuf:"bytes,4,opt,name=namespace_id,json=namespaceId,proto3" json:"namespace_id,omitempty"`
 	Status       RunStatus              `protobuf:"varint,5,opt,name=status,proto3,enum=flowrensic.v1.RunStatus" json:"status,omitempty"`
 	Events       int32                  `protobuf:"varint,6,opt,name=events,proto3" json:"events,omitempty"`
@@ -167,9 +167,9 @@ func (x *ReplayHistory) GetWorkflowType() string {
 	return ""
 }
 
-func (x *ReplayHistory) GetDeployEnv() string {
+func (x *ReplayHistory) GetEnv() string {
 	if x != nil {
-		return x.DeployEnv
+		return x.Env
 	}
 	return ""
 }
@@ -252,12 +252,11 @@ type ListReplayHistoriesRequest struct {
 	// Required. A set spans one workflow type, because that is what a replayer is
 	// built for.
 	WorkflowType string `protobuf:"bytes,1,opt,name=workflow_type,json=workflowType,proto3" json:"workflow_type,omitempty"`
-	// Required. One set holds one environment, and a name no environment is
-	// registered under is an error.
-	DeployEnv string `protobuf:"bytes,2,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
-	// Empty returns every history, each tagged with the versions it carries.
-	// Named, only the histories tagged with it come back.
-	CodeVersion   string `protobuf:"bytes,4,opt,name=code_version,json=codeVersion,proto3" json:"code_version,omitempty"`
+	// Required. The envs the histories come from, each an env the caller may
+	// read. The answer holds the set of each env, in this order.
+	Envs []string `protobuf:"bytes,5,rep,name=envs,proto3" json:"envs,omitempty"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,6,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -299,18 +298,18 @@ func (x *ListReplayHistoriesRequest) GetWorkflowType() string {
 	return ""
 }
 
-func (x *ListReplayHistoriesRequest) GetDeployEnv() string {
+func (x *ListReplayHistoriesRequest) GetEnvs() []string {
 	if x != nil {
-		return x.DeployEnv
+		return x.Envs
 	}
-	return ""
+	return nil
 }
 
-func (x *ListReplayHistoriesRequest) GetCodeVersion() string {
+func (x *ListReplayHistoriesRequest) GetPage() *PageRequest {
 	if x != nil {
-		return x.CodeVersion
+		return x.Page
 	}
-	return ""
+	return nil
 }
 
 // LeftOutHistory is a stored run of the asked type and env whose history could
@@ -372,7 +371,9 @@ type ListReplayHistoriesResponse struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	Histories []*ReplayHistory       `protobuf:"bytes,1,rep,name=histories,proto3" json:"histories,omitempty"`
 	// Empty when every stored history of the type and env could be read.
-	LeftOut       []*LeftOutHistory `protobuf:"bytes,2,rep,name=left_out,json=leftOut,proto3" json:"left_out,omitempty"`
+	LeftOut []*LeftOutHistory `protobuf:"bytes,2,rep,name=left_out,json=leftOut,proto3" json:"left_out,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,3,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -417,6 +418,13 @@ func (x *ListReplayHistoriesResponse) GetHistories() []*ReplayHistory {
 func (x *ListReplayHistoriesResponse) GetLeftOut() []*LeftOutHistory {
 	if x != nil {
 		return x.LeftOut
+	}
+	return nil
+}
+
+func (x *ListReplayHistoriesResponse) GetPage() *PageResponse {
+	if x != nil {
+		return x.Page
 	}
 	return nil
 }
@@ -489,7 +497,7 @@ type ReplayResult struct {
 	WorkflowInterceptors *WorkflowInterceptors `protobuf:"bytes,7,opt,name=workflow_interceptors,json=workflowInterceptors,proto3" json:"workflow_interceptors,omitempty"`
 	// The env the result was sent for. Set by the server on a list, and not
 	// read on ingest, which takes the env of the request.
-	DeployEnv     string `protobuf:"bytes,8,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
+	Env           string `protobuf:"bytes,8,opt,name=env,proto3" json:"env,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -573,18 +581,16 @@ func (x *ReplayResult) GetWorkflowInterceptors() *WorkflowInterceptors {
 	return nil
 }
 
-func (x *ReplayResult) GetDeployEnv() string {
+func (x *ReplayResult) GetEnv() string {
 	if x != nil {
-		return x.DeployEnv
+		return x.Env
 	}
 	return ""
 }
 
 type IngestReplayResultsRequest struct {
-	state   protoimpl.MessageState `protogen:"open.v1"`
-	Results []*ReplayResult        `protobuf:"bytes,1,rep,name=results,proto3" json:"results,omitempty"`
-	// The env the verdicts are sent for. The call carries the key of that env.
-	DeployEnv     string `protobuf:"bytes,2,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Results       []*ReplayResult        `protobuf:"bytes,1,rep,name=results,proto3" json:"results,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -624,13 +630,6 @@ func (x *IngestReplayResultsRequest) GetResults() []*ReplayResult {
 		return x.Results
 	}
 	return nil
-}
-
-func (x *IngestReplayResultsRequest) GetDeployEnv() string {
-	if x != nil {
-		return x.DeployEnv
-	}
-	return ""
 }
 
 type IngestReplayResultsResponse struct {
@@ -690,8 +689,8 @@ type ListReplayResultsRequest struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
 	WorkflowType string                 `protobuf:"bytes,1,opt,name=workflow_type,json=workflowType,proto3" json:"workflow_type,omitempty"`
 	CodeVersion  string                 `protobuf:"bytes,2,opt,name=code_version,json=codeVersion,proto3" json:"code_version,omitempty"`
-	// Only the verdicts that failed, which is the usual question.
-	FailedOnly    bool `protobuf:"varint,3,opt,name=failed_only,json=failedOnly,proto3" json:"failed_only,omitempty"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,4,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -740,16 +739,18 @@ func (x *ListReplayResultsRequest) GetCodeVersion() string {
 	return ""
 }
 
-func (x *ListReplayResultsRequest) GetFailedOnly() bool {
+func (x *ListReplayResultsRequest) GetPage() *PageRequest {
 	if x != nil {
-		return x.FailedOnly
+		return x.Page
 	}
-	return false
+	return nil
 }
 
 type ListReplayResultsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Results       []*ReplayResult        `protobuf:"bytes,1,rep,name=results,proto3" json:"results,omitempty"`
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	Results []*ReplayResult        `protobuf:"bytes,1,rep,name=results,proto3" json:"results,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -791,14 +792,19 @@ func (x *ListReplayResultsResponse) GetResults() []*ReplayResult {
 	return nil
 }
 
+func (x *ListReplayResultsResponse) GetPage() *PageResponse {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 // ReplayRequest is one ListReplayHistories call as the server recorded it.
 type ReplayRequest struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
 	At           *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=at,proto3" json:"at,omitempty"`
-	DeployEnv    string                 `protobuf:"bytes,2,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
+	Env          string                 `protobuf:"bytes,2,opt,name=env,proto3" json:"env,omitempty"`
 	WorkflowType string                 `protobuf:"bytes,3,opt,name=workflow_type,json=workflowType,proto3" json:"workflow_type,omitempty"`
-	// code_version is the one asked for, empty when none.
-	CodeVersion string `protobuf:"bytes,4,opt,name=code_version,json=codeVersion,proto3" json:"code_version,omitempty"`
 	// candidates is the runs of the type and env open or closed within the
 	// window, before one per shape.
 	Candidates int32 `protobuf:"varint,5,opt,name=candidates,proto3" json:"candidates,omitempty"`
@@ -807,7 +813,16 @@ type ReplayRequest struct {
 	// size_bytes is the size_bytes of every history returned, added up.
 	SizeBytes int64 `protobuf:"varint,8,opt,name=size_bytes,json=sizeBytes,proto3" json:"size_bytes,omitempty"`
 	// outcome is ok, or the code of the error the call was answered with.
-	Outcome       string `protobuf:"bytes,9,opt,name=outcome,proto3" json:"outcome,omitempty"`
+	Outcome string `protobuf:"bytes,9,opt,name=outcome,proto3" json:"outcome,omitempty"`
+	// fetched_by_env and fetched_by_ephemeral_run are the env and the
+	// ephemeral run of the caller.
+	FetchedByEnv          string `protobuf:"bytes,10,opt,name=fetched_by_env,json=fetchedByEnv,proto3" json:"fetched_by_env,omitempty"`
+	FetchedByEphemeralRun string `protobuf:"bytes,11,opt,name=fetched_by_ephemeral_run,json=fetchedByEphemeralRun,proto3" json:"fetched_by_ephemeral_run,omitempty"`
+	// results_passed and results_failed are how many replay results the env
+	// and the ephemeral run of the caller sent for the workflow type, that
+	// passed and that failed.
+	ResultsPassed int32 `protobuf:"varint,12,opt,name=results_passed,json=resultsPassed,proto3" json:"results_passed,omitempty"`
+	ResultsFailed int32 `protobuf:"varint,13,opt,name=results_failed,json=resultsFailed,proto3" json:"results_failed,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -849,9 +864,9 @@ func (x *ReplayRequest) GetAt() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *ReplayRequest) GetDeployEnv() string {
+func (x *ReplayRequest) GetEnv() string {
 	if x != nil {
-		return x.DeployEnv
+		return x.Env
 	}
 	return ""
 }
@@ -859,13 +874,6 @@ func (x *ReplayRequest) GetDeployEnv() string {
 func (x *ReplayRequest) GetWorkflowType() string {
 	if x != nil {
 		return x.WorkflowType
-	}
-	return ""
-}
-
-func (x *ReplayRequest) GetCodeVersion() string {
-	if x != nil {
-		return x.CodeVersion
 	}
 	return ""
 }
@@ -905,8 +913,38 @@ func (x *ReplayRequest) GetOutcome() string {
 	return ""
 }
 
+func (x *ReplayRequest) GetFetchedByEnv() string {
+	if x != nil {
+		return x.FetchedByEnv
+	}
+	return ""
+}
+
+func (x *ReplayRequest) GetFetchedByEphemeralRun() string {
+	if x != nil {
+		return x.FetchedByEphemeralRun
+	}
+	return ""
+}
+
+func (x *ReplayRequest) GetResultsPassed() int32 {
+	if x != nil {
+		return x.ResultsPassed
+	}
+	return 0
+}
+
+func (x *ReplayRequest) GetResultsFailed() int32 {
+	if x != nil {
+		return x.ResultsFailed
+	}
+	return 0
+}
+
 type ListReplayRequestsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,1,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -941,12 +979,21 @@ func (*ListReplayRequestsRequest) Descriptor() ([]byte, []int) {
 	return file_flowrensic_v1_replay_proto_rawDescGZIP(), []int{11}
 }
 
+func (x *ListReplayRequestsRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 type ListReplayRequestsResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// requests are the newest records, newest first, at most 200.
 	Requests []*ReplayRequest `protobuf:"bytes,1,rep,name=requests,proto3" json:"requests,omitempty"`
 	// held is how many records Flowrensic holds.
-	Held          int64 `protobuf:"varint,2,opt,name=held,proto3" json:"held,omitempty"`
+	Held int64 `protobuf:"varint,2,opt,name=held,proto3" json:"held,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,3,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -995,13 +1042,20 @@ func (x *ListReplayRequestsResponse) GetHeld() int64 {
 	return 0
 }
 
+func (x *ListReplayRequestsResponse) GetPage() *PageResponse {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 // ReplaySetCount is how many histories the replay set of one workflow type
 // and env holds now, as ListReplayHistories would answer it with no code
 // version, FPP-134.
 type ReplaySetCount struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
 	WorkflowType string                 `protobuf:"bytes,1,opt,name=workflow_type,json=workflowType,proto3" json:"workflow_type,omitempty"`
-	DeployEnv    string                 `protobuf:"bytes,2,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
+	Env          string                 `protobuf:"bytes,2,opt,name=env,proto3" json:"env,omitempty"`
 	Histories    int32                  `protobuf:"varint,3,opt,name=histories,proto3" json:"histories,omitempty"`
 	// quarantined is the runs of the type and env in quarantine.
 	Quarantined int32 `protobuf:"varint,4,opt,name=quarantined,proto3" json:"quarantined,omitempty"`
@@ -1048,9 +1102,9 @@ func (x *ReplaySetCount) GetWorkflowType() string {
 	return ""
 }
 
-func (x *ReplaySetCount) GetDeployEnv() string {
+func (x *ReplaySetCount) GetEnv() string {
 	if x != nil {
-		return x.DeployEnv
+		return x.Env
 	}
 	return ""
 }
@@ -1077,7 +1131,9 @@ func (x *ReplaySetCount) GetLeftOut() int32 {
 }
 
 type ListReplaySetsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,1,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1112,13 +1168,22 @@ func (*ListReplaySetsRequest) Descriptor() ([]byte, []int) {
 	return file_flowrensic_v1_replay_proto_rawDescGZIP(), []int{14}
 }
 
+func (x *ListReplaySetsRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 type ListReplaySetsResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// sets is one entry per workflow type and env with a run open or closed in
 	// the replay window, or a run in quarantine, by type and then env.
 	Sets []*ReplaySetCount `protobuf:"bytes,1,rep,name=sets,proto3" json:"sets,omitempty"`
-	// deploy_envs are the registered envs, in the order of the env list.
-	DeployEnvs    []string `protobuf:"bytes,2,rep,name=deploy_envs,json=deployEnvs,proto3" json:"deploy_envs,omitempty"`
+	// envs are the registered envs, in the order of the env list.
+	Envs []string `protobuf:"bytes,2,rep,name=envs,proto3" json:"envs,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,3,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1160,9 +1225,16 @@ func (x *ListReplaySetsResponse) GetSets() []*ReplaySetCount {
 	return nil
 }
 
-func (x *ListReplaySetsResponse) GetDeployEnvs() []string {
+func (x *ListReplaySetsResponse) GetEnvs() []string {
 	if x != nil {
-		return x.DeployEnvs
+		return x.Envs
+	}
+	return nil
+}
+
+func (x *ListReplaySetsResponse) GetPage() *PageResponse {
+	if x != nil {
+		return x.Page
 	}
 	return nil
 }
@@ -1172,7 +1244,7 @@ type QuarantinedHistory struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
 	RunId        string                 `protobuf:"bytes,1,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
 	WorkflowType string                 `protobuf:"bytes,2,opt,name=workflow_type,json=workflowType,proto3" json:"workflow_type,omitempty"`
-	DeployEnv    string                 `protobuf:"bytes,3,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
+	Env          string                 `protobuf:"bytes,3,opt,name=env,proto3" json:"env,omitempty"`
 	Status       RunStatus              `protobuf:"varint,4,opt,name=status,proto3,enum=flowrensic.v1.RunStatus" json:"status,omitempty"`
 	StartedAt    *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
 	ClosedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=closed_at,json=closedAt,proto3" json:"closed_at,omitempty"`
@@ -1234,9 +1306,9 @@ func (x *QuarantinedHistory) GetWorkflowType() string {
 	return ""
 }
 
-func (x *QuarantinedHistory) GetDeployEnv() string {
+func (x *QuarantinedHistory) GetEnv() string {
 	if x != nil {
-		return x.DeployEnv
+		return x.Env
 	}
 	return ""
 }
@@ -1298,8 +1370,10 @@ func (x *QuarantinedHistory) GetTemporalUiUrl() string {
 }
 
 type GetReplaySetRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	WorkflowType  string                 `protobuf:"bytes,1,opt,name=workflow_type,json=workflowType,proto3" json:"workflow_type,omitempty"`
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	WorkflowType string                 `protobuf:"bytes,1,opt,name=workflow_type,json=workflowType,proto3" json:"workflow_type,omitempty"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1341,6 +1415,13 @@ func (x *GetReplaySetRequest) GetWorkflowType() string {
 	return ""
 }
 
+func (x *GetReplaySetRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 type GetReplaySetResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// histories are the replay set of the type in each env, as
@@ -1349,7 +1430,9 @@ type GetReplaySetResponse struct {
 	Histories []*ReplayHistory  `protobuf:"bytes,1,rep,name=histories,proto3" json:"histories,omitempty"`
 	LeftOut   []*LeftOutHistory `protobuf:"bytes,2,rep,name=left_out,json=leftOut,proto3" json:"left_out,omitempty"`
 	// quarantined are the runs of the type in quarantine, newest first.
-	Quarantined   []*QuarantinedHistory `protobuf:"bytes,3,rep,name=quarantined,proto3" json:"quarantined,omitempty"`
+	Quarantined []*QuarantinedHistory `protobuf:"bytes,3,rep,name=quarantined,proto3" json:"quarantined,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,4,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1401,6 +1484,13 @@ func (x *GetReplaySetResponse) GetLeftOut() []*LeftOutHistory {
 func (x *GetReplaySetResponse) GetQuarantined() []*QuarantinedHistory {
 	if x != nil {
 		return x.Quarantined
+	}
+	return nil
+}
+
+func (x *GetReplaySetResponse) GetPage() *PageResponse {
+	if x != nil {
+		return x.Page
 	}
 	return nil
 }
@@ -1594,12 +1684,11 @@ var File_flowrensic_v1_replay_proto protoreflect.FileDescriptor
 
 const file_flowrensic_v1_replay_proto_rawDesc = "" +
 	"\n" +
-	"\x1aflowrensic/v1/replay.proto\x12\rflowrensic.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe3\x03\n" +
+	"\x1aflowrensic/v1/replay.proto\x12\rflowrensic.v1\x1a\x18flowrensic/v1/page.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xd6\x03\n" +
 	"\rReplayHistory\x12\x15\n" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\x12#\n" +
-	"\rworkflow_type\x18\x02 \x01(\tR\fworkflowType\x12\x1d\n" +
-	"\n" +
-	"deploy_env\x18\x03 \x01(\tR\tdeployEnv\x12!\n" +
+	"\rworkflow_type\x18\x02 \x01(\tR\fworkflowType\x12\x10\n" +
+	"\x03env\x18\x03 \x01(\tR\x03env\x12!\n" +
 	"\fnamespace_id\x18\x04 \x01(\tR\vnamespaceId\x120\n" +
 	"\x06status\x18\x05 \x01(\x0e2\x18.flowrensic.v1.RunStatusR\x06status\x12\x16\n" +
 	"\x06events\x18\x06 \x01(\x05R\x06events\x129\n" +
@@ -1612,20 +1701,20 @@ const file_flowrensic_v1_replay_proto_rawDesc = "" +
 	"\n" +
 	"size_bytes\x18\v \x01(\x03R\tsizeBytes\x12&\n" +
 	"\x0ftemporal_ui_url\x18\f \x01(\tR\rtemporalUiUrl\x12\x18\n" +
-	"\ahistory\x18\r \x01(\fR\ahistory\"\x90\x01\n" +
+	"\ahistory\x18\r \x01(\fR\ahistory\"\xb1\x01\n" +
 	"\x1aListReplayHistoriesRequest\x12#\n" +
-	"\rworkflow_type\x18\x01 \x01(\tR\fworkflowType\x12\x1d\n" +
-	"\n" +
-	"deploy_env\x18\x02 \x01(\tR\tdeployEnv\x12!\n" +
-	"\fcode_version\x18\x04 \x01(\tR\vcodeVersionJ\x04\b\x03\x10\x04R\x05limit\"?\n" +
+	"\rworkflow_type\x18\x01 \x01(\tR\fworkflowType\x12\x12\n" +
+	"\x04envs\x18\x05 \x03(\tR\x04envs\x12.\n" +
+	"\x04page\x18\x06 \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04pageJ\x04\b\x02\x10\x03J\x04\b\x03\x10\x04J\x04\b\x04\x10\x05R\x03envR\x05limitR\fcode_version\"?\n" +
 	"\x0eLeftOutHistory\x12\x15\n" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\x12\x16\n" +
-	"\x06reason\x18\x02 \x01(\tR\x06reason\"\x93\x01\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\"\xc4\x01\n" +
 	"\x1bListReplayHistoriesResponse\x12:\n" +
 	"\thistories\x18\x01 \x03(\v2\x1c.flowrensic.v1.ReplayHistoryR\thistories\x128\n" +
-	"\bleft_out\x18\x02 \x03(\v2\x1d.flowrensic.v1.LeftOutHistoryR\aleftOut\",\n" +
+	"\bleft_out\x18\x02 \x03(\v2\x1d.flowrensic.v1.LeftOutHistoryR\aleftOut\x12/\n" +
+	"\x04page\x18\x03 \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04page\",\n" +
 	"\x14WorkflowInterceptors\x12\x14\n" +
-	"\x05names\x18\x01 \x03(\tR\x05names\"\xd1\x02\n" +
+	"\x05names\x18\x01 \x03(\tR\x05names\"\xc4\x02\n" +
 	"\fReplayResult\x12\x15\n" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\x12!\n" +
 	"\fcode_version\x18\x02 \x01(\tR\vcodeVersion\x12\x16\n" +
@@ -1634,29 +1723,24 @@ const file_flowrensic_v1_replay_proto_rawDesc = "" +
 	"\rworkflow_type\x18\x05 \x01(\tR\fworkflowType\x12;\n" +
 	"\vreplayed_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
 	"replayedAt\x12X\n" +
-	"\x15workflow_interceptors\x18\a \x01(\v2#.flowrensic.v1.WorkflowInterceptorsR\x14workflowInterceptors\x12\x1d\n" +
-	"\n" +
-	"deploy_env\x18\b \x01(\tR\tdeployEnv\"r\n" +
+	"\x15workflow_interceptors\x18\a \x01(\v2#.flowrensic.v1.WorkflowInterceptorsR\x14workflowInterceptors\x12\x10\n" +
+	"\x03env\x18\b \x01(\tR\x03env\"f\n" +
 	"\x1aIngestReplayResultsRequest\x125\n" +
-	"\aresults\x18\x01 \x03(\v2\x1b.flowrensic.v1.ReplayResultR\aresults\x12\x1d\n" +
-	"\n" +
-	"deploy_env\x18\x02 \x01(\tR\tdeployEnv\"Q\n" +
+	"\aresults\x18\x01 \x03(\v2\x1b.flowrensic.v1.ReplayResultR\aresultsJ\x04\b\x02\x10\x03R\vcurrent_env\"Q\n" +
 	"\x1bIngestReplayResultsResponse\x12\x1a\n" +
 	"\baccepted\x18\x01 \x01(\x05R\baccepted\x12\x16\n" +
-	"\x06failed\x18\x02 \x01(\x05R\x06failed\"\x83\x01\n" +
+	"\x06failed\x18\x02 \x01(\x05R\x06failed\"\xa5\x01\n" +
 	"\x18ListReplayResultsRequest\x12#\n" +
 	"\rworkflow_type\x18\x01 \x01(\tR\fworkflowType\x12!\n" +
-	"\fcode_version\x18\x02 \x01(\tR\vcodeVersion\x12\x1f\n" +
-	"\vfailed_only\x18\x03 \x01(\bR\n" +
-	"failedOnly\"R\n" +
+	"\fcode_version\x18\x02 \x01(\tR\vcodeVersion\x12.\n" +
+	"\x04page\x18\x04 \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04pageJ\x04\b\x03\x10\x04R\vfailed_only\"\x83\x01\n" +
 	"\x19ListReplayResultsResponse\x125\n" +
-	"\aresults\x18\x01 \x03(\v2\x1b.flowrensic.v1.ReplayResultR\aresults\"\xb2\x02\n" +
+	"\aresults\x18\x01 \x03(\v2\x1b.flowrensic.v1.ReplayResultR\aresults\x12/\n" +
+	"\x04page\x18\x02 \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04page\"\xc3\x03\n" +
 	"\rReplayRequest\x12*\n" +
-	"\x02at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\x02at\x12\x1d\n" +
-	"\n" +
-	"deploy_env\x18\x02 \x01(\tR\tdeployEnv\x12#\n" +
-	"\rworkflow_type\x18\x03 \x01(\tR\fworkflowType\x12!\n" +
-	"\fcode_version\x18\x04 \x01(\tR\vcodeVersion\x12\x1e\n" +
+	"\x02at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\x02at\x12\x10\n" +
+	"\x03env\x18\x02 \x01(\tR\x03env\x12#\n" +
+	"\rworkflow_type\x18\x03 \x01(\tR\fworkflowType\x12\x1e\n" +
 	"\n" +
 	"candidates\x18\x05 \x01(\x05R\n" +
 	"candidates\x12\x1a\n" +
@@ -1664,28 +1748,34 @@ const file_flowrensic_v1_replay_proto_rawDesc = "" +
 	"\bleft_out\x18\a \x01(\x05R\aleftOut\x12\x1d\n" +
 	"\n" +
 	"size_bytes\x18\b \x01(\x03R\tsizeBytes\x12\x18\n" +
-	"\aoutcome\x18\t \x01(\tR\aoutcome\"\x1b\n" +
-	"\x19ListReplayRequestsRequest\"j\n" +
+	"\aoutcome\x18\t \x01(\tR\aoutcome\x12$\n" +
+	"\x0efetched_by_env\x18\n" +
+	" \x01(\tR\ffetchedByEnv\x127\n" +
+	"\x18fetched_by_ephemeral_run\x18\v \x01(\tR\x15fetchedByEphemeralRun\x12%\n" +
+	"\x0eresults_passed\x18\f \x01(\x05R\rresultsPassed\x12%\n" +
+	"\x0eresults_failed\x18\r \x01(\x05R\rresultsFailedJ\x04\b\x04\x10\x05R\fcode_version\"K\n" +
+	"\x19ListReplayRequestsRequest\x12.\n" +
+	"\x04page\x18\x01 \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04page\"\x9b\x01\n" +
 	"\x1aListReplayRequestsResponse\x128\n" +
 	"\brequests\x18\x01 \x03(\v2\x1c.flowrensic.v1.ReplayRequestR\brequests\x12\x12\n" +
-	"\x04held\x18\x02 \x01(\x03R\x04held\"\xaf\x01\n" +
+	"\x04held\x18\x02 \x01(\x03R\x04held\x12/\n" +
+	"\x04page\x18\x03 \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04page\"\xa2\x01\n" +
 	"\x0eReplaySetCount\x12#\n" +
-	"\rworkflow_type\x18\x01 \x01(\tR\fworkflowType\x12\x1d\n" +
-	"\n" +
-	"deploy_env\x18\x02 \x01(\tR\tdeployEnv\x12\x1c\n" +
+	"\rworkflow_type\x18\x01 \x01(\tR\fworkflowType\x12\x10\n" +
+	"\x03env\x18\x02 \x01(\tR\x03env\x12\x1c\n" +
 	"\thistories\x18\x03 \x01(\x05R\thistories\x12 \n" +
 	"\vquarantined\x18\x04 \x01(\x05R\vquarantined\x12\x19\n" +
-	"\bleft_out\x18\x05 \x01(\x05R\aleftOut\"\x17\n" +
-	"\x15ListReplaySetsRequest\"l\n" +
+	"\bleft_out\x18\x05 \x01(\x05R\aleftOut\"G\n" +
+	"\x15ListReplaySetsRequest\x12.\n" +
+	"\x04page\x18\x01 \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04page\"\x90\x01\n" +
 	"\x16ListReplaySetsResponse\x121\n" +
-	"\x04sets\x18\x01 \x03(\v2\x1d.flowrensic.v1.ReplaySetCountR\x04sets\x12\x1f\n" +
-	"\vdeploy_envs\x18\x02 \x03(\tR\n" +
-	"deployEnvs\"\xbe\x03\n" +
+	"\x04sets\x18\x01 \x03(\v2\x1d.flowrensic.v1.ReplaySetCountR\x04sets\x12\x12\n" +
+	"\x04envs\x18\x02 \x03(\tR\x04envs\x12/\n" +
+	"\x04page\x18\x03 \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04page\"\xb1\x03\n" +
 	"\x12QuarantinedHistory\x12\x15\n" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\x12#\n" +
-	"\rworkflow_type\x18\x02 \x01(\tR\fworkflowType\x12\x1d\n" +
-	"\n" +
-	"deploy_env\x18\x03 \x01(\tR\tdeployEnv\x120\n" +
+	"\rworkflow_type\x18\x02 \x01(\tR\fworkflowType\x12\x10\n" +
+	"\x03env\x18\x03 \x01(\tR\x03env\x120\n" +
 	"\x06status\x18\x04 \x01(\x0e2\x18.flowrensic.v1.RunStatusR\x06status\x129\n" +
 	"\n" +
 	"started_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x127\n" +
@@ -1695,13 +1785,15 @@ const file_flowrensic_v1_replay_proto_rawDesc = "" +
 	"\x0equarantined_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\rquarantinedAt\x12\x10\n" +
 	"\x03url\x18\n" +
 	" \x01(\tR\x03url\x12&\n" +
-	"\x0ftemporal_ui_url\x18\v \x01(\tR\rtemporalUiUrl\":\n" +
+	"\x0ftemporal_ui_url\x18\v \x01(\tR\rtemporalUiUrl\"j\n" +
 	"\x13GetReplaySetRequest\x12#\n" +
-	"\rworkflow_type\x18\x01 \x01(\tR\fworkflowType\"\xd1\x01\n" +
+	"\rworkflow_type\x18\x01 \x01(\tR\fworkflowType\x12.\n" +
+	"\x04page\x18\x02 \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04page\"\x82\x02\n" +
 	"\x14GetReplaySetResponse\x12:\n" +
 	"\thistories\x18\x01 \x03(\v2\x1c.flowrensic.v1.ReplayHistoryR\thistories\x128\n" +
 	"\bleft_out\x18\x02 \x03(\v2\x1d.flowrensic.v1.LeftOutHistoryR\aleftOut\x12C\n" +
-	"\vquarantined\x18\x03 \x03(\v2!.flowrensic.v1.QuarantinedHistoryR\vquarantined\"]\n" +
+	"\vquarantined\x18\x03 \x03(\v2!.flowrensic.v1.QuarantinedHistoryR\vquarantined\x12/\n" +
+	"\x04page\x18\x04 \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04page\"]\n" +
 	"\x18QuarantineHistoryRequest\x12\x15\n" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\x12\x12\n" +
 	"\x04user\x18\x02 \x01(\tR\x04user\x12\x16\n" +
@@ -1763,33 +1855,45 @@ var file_flowrensic_v1_replay_proto_goTypes = []any{
 	(*ReleaseHistoryRequest)(nil),       // 22: flowrensic.v1.ReleaseHistoryRequest
 	(*ReleaseHistoryResponse)(nil),      // 23: flowrensic.v1.ReleaseHistoryResponse
 	(*timestamppb.Timestamp)(nil),       // 24: google.protobuf.Timestamp
+	(*PageRequest)(nil),                 // 25: flowrensic.v1.PageRequest
+	(*PageResponse)(nil),                // 26: flowrensic.v1.PageResponse
 }
 var file_flowrensic_v1_replay_proto_depIdxs = []int32{
 	0,  // 0: flowrensic.v1.ReplayHistory.status:type_name -> flowrensic.v1.RunStatus
 	24, // 1: flowrensic.v1.ReplayHistory.started_at:type_name -> google.protobuf.Timestamp
 	24, // 2: flowrensic.v1.ReplayHistory.closed_at:type_name -> google.protobuf.Timestamp
-	1,  // 3: flowrensic.v1.ListReplayHistoriesResponse.histories:type_name -> flowrensic.v1.ReplayHistory
-	3,  // 4: flowrensic.v1.ListReplayHistoriesResponse.left_out:type_name -> flowrensic.v1.LeftOutHistory
-	24, // 5: flowrensic.v1.ReplayResult.replayed_at:type_name -> google.protobuf.Timestamp
-	5,  // 6: flowrensic.v1.ReplayResult.workflow_interceptors:type_name -> flowrensic.v1.WorkflowInterceptors
-	6,  // 7: flowrensic.v1.IngestReplayResultsRequest.results:type_name -> flowrensic.v1.ReplayResult
-	6,  // 8: flowrensic.v1.ListReplayResultsResponse.results:type_name -> flowrensic.v1.ReplayResult
-	24, // 9: flowrensic.v1.ReplayRequest.at:type_name -> google.protobuf.Timestamp
-	11, // 10: flowrensic.v1.ListReplayRequestsResponse.requests:type_name -> flowrensic.v1.ReplayRequest
-	14, // 11: flowrensic.v1.ListReplaySetsResponse.sets:type_name -> flowrensic.v1.ReplaySetCount
-	0,  // 12: flowrensic.v1.QuarantinedHistory.status:type_name -> flowrensic.v1.RunStatus
-	24, // 13: flowrensic.v1.QuarantinedHistory.started_at:type_name -> google.protobuf.Timestamp
-	24, // 14: flowrensic.v1.QuarantinedHistory.closed_at:type_name -> google.protobuf.Timestamp
-	24, // 15: flowrensic.v1.QuarantinedHistory.quarantined_at:type_name -> google.protobuf.Timestamp
-	1,  // 16: flowrensic.v1.GetReplaySetResponse.histories:type_name -> flowrensic.v1.ReplayHistory
-	3,  // 17: flowrensic.v1.GetReplaySetResponse.left_out:type_name -> flowrensic.v1.LeftOutHistory
-	17, // 18: flowrensic.v1.GetReplaySetResponse.quarantined:type_name -> flowrensic.v1.QuarantinedHistory
-	17, // 19: flowrensic.v1.QuarantineHistoryResponse.quarantined:type_name -> flowrensic.v1.QuarantinedHistory
-	20, // [20:20] is the sub-list for method output_type
-	20, // [20:20] is the sub-list for method input_type
-	20, // [20:20] is the sub-list for extension type_name
-	20, // [20:20] is the sub-list for extension extendee
-	0,  // [0:20] is the sub-list for field type_name
+	25, // 3: flowrensic.v1.ListReplayHistoriesRequest.page:type_name -> flowrensic.v1.PageRequest
+	1,  // 4: flowrensic.v1.ListReplayHistoriesResponse.histories:type_name -> flowrensic.v1.ReplayHistory
+	3,  // 5: flowrensic.v1.ListReplayHistoriesResponse.left_out:type_name -> flowrensic.v1.LeftOutHistory
+	26, // 6: flowrensic.v1.ListReplayHistoriesResponse.page:type_name -> flowrensic.v1.PageResponse
+	24, // 7: flowrensic.v1.ReplayResult.replayed_at:type_name -> google.protobuf.Timestamp
+	5,  // 8: flowrensic.v1.ReplayResult.workflow_interceptors:type_name -> flowrensic.v1.WorkflowInterceptors
+	6,  // 9: flowrensic.v1.IngestReplayResultsRequest.results:type_name -> flowrensic.v1.ReplayResult
+	25, // 10: flowrensic.v1.ListReplayResultsRequest.page:type_name -> flowrensic.v1.PageRequest
+	6,  // 11: flowrensic.v1.ListReplayResultsResponse.results:type_name -> flowrensic.v1.ReplayResult
+	26, // 12: flowrensic.v1.ListReplayResultsResponse.page:type_name -> flowrensic.v1.PageResponse
+	24, // 13: flowrensic.v1.ReplayRequest.at:type_name -> google.protobuf.Timestamp
+	25, // 14: flowrensic.v1.ListReplayRequestsRequest.page:type_name -> flowrensic.v1.PageRequest
+	11, // 15: flowrensic.v1.ListReplayRequestsResponse.requests:type_name -> flowrensic.v1.ReplayRequest
+	26, // 16: flowrensic.v1.ListReplayRequestsResponse.page:type_name -> flowrensic.v1.PageResponse
+	25, // 17: flowrensic.v1.ListReplaySetsRequest.page:type_name -> flowrensic.v1.PageRequest
+	14, // 18: flowrensic.v1.ListReplaySetsResponse.sets:type_name -> flowrensic.v1.ReplaySetCount
+	26, // 19: flowrensic.v1.ListReplaySetsResponse.page:type_name -> flowrensic.v1.PageResponse
+	0,  // 20: flowrensic.v1.QuarantinedHistory.status:type_name -> flowrensic.v1.RunStatus
+	24, // 21: flowrensic.v1.QuarantinedHistory.started_at:type_name -> google.protobuf.Timestamp
+	24, // 22: flowrensic.v1.QuarantinedHistory.closed_at:type_name -> google.protobuf.Timestamp
+	24, // 23: flowrensic.v1.QuarantinedHistory.quarantined_at:type_name -> google.protobuf.Timestamp
+	25, // 24: flowrensic.v1.GetReplaySetRequest.page:type_name -> flowrensic.v1.PageRequest
+	1,  // 25: flowrensic.v1.GetReplaySetResponse.histories:type_name -> flowrensic.v1.ReplayHistory
+	3,  // 26: flowrensic.v1.GetReplaySetResponse.left_out:type_name -> flowrensic.v1.LeftOutHistory
+	17, // 27: flowrensic.v1.GetReplaySetResponse.quarantined:type_name -> flowrensic.v1.QuarantinedHistory
+	26, // 28: flowrensic.v1.GetReplaySetResponse.page:type_name -> flowrensic.v1.PageResponse
+	17, // 29: flowrensic.v1.QuarantineHistoryResponse.quarantined:type_name -> flowrensic.v1.QuarantinedHistory
+	30, // [30:30] is the sub-list for method output_type
+	30, // [30:30] is the sub-list for method input_type
+	30, // [30:30] is the sub-list for extension type_name
+	30, // [30:30] is the sub-list for extension extendee
+	0,  // [0:30] is the sub-list for field type_name
 }
 
 func init() { file_flowrensic_v1_replay_proto_init() }
@@ -1797,6 +1901,7 @@ func file_flowrensic_v1_replay_proto_init() {
 	if File_flowrensic_v1_replay_proto != nil {
 		return
 	}
+	file_flowrensic_v1_page_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

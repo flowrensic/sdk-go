@@ -24,29 +24,28 @@ var File_flowrensic_v1_services_proto protoreflect.FileDescriptor
 
 const file_flowrensic_v1_services_proto_rawDesc = "" +
 	"\n" +
-	"\x1cflowrensic/v1/services.proto\x12\rflowrensic.v1\x1a$flowrensic/v1/activity_metrics.proto\x1a\x1bflowrensic/v1/catalog.proto\x1a\x1cflowrensic/v1/catch_up.proto\x1a flowrensic/v1/client_calls.proto\x1a\x18flowrensic/v1/cost.proto\x1a\x1aflowrensic/v1/deploy.proto\x1a flowrensic/v1/env_instance.proto\x1a\x1bflowrensic/v1/finding.proto\x1a\x17flowrensic/v1/job.proto\x1a\x18flowrensic/v1/load.proto\x1a\x1fflowrensic/v1/remediation.proto\x1a\x1aflowrensic/v1/replay.proto\x1a!flowrensic/v1/server_config.proto\x1a\x1fflowrensic/v1/stored_data.proto\x1a$flowrensic/v1/workflow_history.proto\x1a\"flowrensic/v1/workflow_types.proto2\x94\x03\n" +
+	"\x1cflowrensic/v1/services.proto\x12\rflowrensic.v1\x1a$flowrensic/v1/activity_metrics.proto\x1a\x1bflowrensic/v1/catalog.proto\x1a\x1cflowrensic/v1/catch_up.proto\x1a flowrensic/v1/client_calls.proto\x1a\x18flowrensic/v1/cost.proto\x1a\x1aflowrensic/v1/deploy.proto\x1a!flowrensic/v1/ephemeral_run.proto\x1a\x1bflowrensic/v1/finding.proto\x1a\x17flowrensic/v1/job.proto\x1a\x18flowrensic/v1/load.proto\x1a\x1fflowrensic/v1/remediation.proto\x1a\x1aflowrensic/v1/replay.proto\x1a!flowrensic/v1/server_config.proto\x1a\x1fflowrensic/v1/stored_data.proto\x1a$flowrensic/v1/workflow_history.proto\x1a\"flowrensic/v1/workflow_types.proto2\x82\x03\n" +
 	"\x0eCatalogService\x12h\n" +
-	"\x11RegisterNamespace\x12'.flowrensic.v1.RegisterNamespaceRequest\x1a(.flowrensic.v1.RegisterNamespaceResponse\"\x00\x12_\n" +
-	"\x0eListDeployEnvs\x12$.flowrensic.v1.ListDeployEnvsRequest\x1a%.flowrensic.v1.ListDeployEnvsResponse\"\x00\x12V\n" +
+	"\x11RegisterNamespace\x12'.flowrensic.v1.RegisterNamespaceRequest\x1a(.flowrensic.v1.RegisterNamespaceResponse\"\x00\x12M\n" +
+	"\bListEnvs\x12\x1e.flowrensic.v1.ListEnvsRequest\x1a\x1f.flowrensic.v1.ListEnvsResponse\"\x00\x12V\n" +
 	"\vListServers\x12!.flowrensic.v1.ListServersRequest\x1a\".flowrensic.v1.ListServersResponse\"\x00\x12_\n" +
-	"\x0eListNamespaces\x12$.flowrensic.v1.ListNamespacesRequest\x1a%.flowrensic.v1.ListNamespacesResponse\"\x002\xfa\n" +
-	"\n" +
+	"\x0eListNamespaces\x12$.flowrensic.v1.ListNamespacesRequest\x1a%.flowrensic.v1.ListNamespacesResponse\"\x002\x84\v\n" +
 	"\rIngestService\x12q\n" +
 	"\x14IngestActivityEvents\x12*.flowrensic.v1.IngestActivityEventsRequest\x1a+.flowrensic.v1.IngestActivityEventsResponse\"\x00\x12\\\n" +
 	"\rIngestHistory\x12#.flowrensic.v1.IngestHistoryRequest\x1a$.flowrensic.v1.IngestHistoryResponse\"\x00\x12n\n" +
-	"\x13IngestReplayResults\x12).flowrensic.v1.IngestReplayResultsRequest\x1a*.flowrensic.v1.IngestReplayResultsResponse\"\x00\x12q\n" +
-	"\x14EnvInstanceHandshake\x12*.flowrensic.v1.EnvInstanceHandshakeRequest\x1a+.flowrensic.v1.EnvInstanceHandshakeResponse\"\x00\x12}\n" +
-	"\x18IngestEnvInstanceMetrics\x12..flowrensic.v1.IngestEnvInstanceMetricsRequest\x1a/.flowrensic.v1.IngestEnvInstanceMetricsResponse\"\x00\x12n\n" +
+	"\x13IngestReplayResults\x12).flowrensic.v1.IngestReplayResultsRequest\x1a*.flowrensic.v1.IngestReplayResultsResponse\"\x00\x12t\n" +
+	"\x15EphemeralRunHandshake\x12+.flowrensic.v1.EphemeralRunHandshakeRequest\x1a,.flowrensic.v1.EphemeralRunHandshakeResponse\"\x00\x12\x80\x01\n" +
+	"\x19IngestEphemeralRunMetrics\x12/.flowrensic.v1.IngestEphemeralRunMetricsRequest\x1a0.flowrensic.v1.IngestEphemeralRunMetricsResponse\"\x00\x12n\n" +
 	"\x13IngestWorkerMetrics\x12).flowrensic.v1.IngestWorkerMetricsRequest\x1a*.flowrensic.v1.IngestWorkerMetricsResponse\"\x00\x12n\n" +
-	"\x13IngestEngineHistory\x12).flowrensic.v1.IngestEngineHistoryRequest\x1a*.flowrensic.v1.IngestEngineHistoryResponse\"\x00\x12n\n" +
-	"\x13EnvInstanceHandover\x12).flowrensic.v1.EnvInstanceHandoverRequest\x1a*.flowrensic.v1.EnvInstanceHandoverResponse\"\x00\x12S\n" +
+	"\x13IngestEngineHistory\x12).flowrensic.v1.IngestEngineHistoryRequest\x1a*.flowrensic.v1.IngestEngineHistoryResponse\"\x00\x12q\n" +
+	"\x14EphemeralRunHandover\x12*.flowrensic.v1.EphemeralRunHandoverRequest\x1a+.flowrensic.v1.EphemeralRunHandoverResponse\"\x00\x12S\n" +
 	"\n" +
 	"WorkerBeat\x12 .flowrensic.v1.WorkerBeatRequest\x1a!.flowrensic.v1.WorkerBeatResponse\"\x00\x12S\n" +
 	"\n" +
 	"OldWorkers\x12 .flowrensic.v1.OldWorkersRequest\x1a!.flowrensic.v1.OldWorkersResponse\"\x00\x12h\n" +
 	"\x11IngestDeployStage\x12'.flowrensic.v1.IngestDeployStageRequest\x1a(.flowrensic.v1.IngestDeployStageResponse\"\x00\x12h\n" +
 	"\x11IngestClientCalls\x12'.flowrensic.v1.IngestClientCallsRequest\x1a(.flowrensic.v1.IngestClientCallsResponse\"\x00\x12h\n" +
-	"\x11IngestQueryCounts\x12'.flowrensic.v1.IngestQueryCountsRequest\x1a(.flowrensic.v1.IngestQueryCountsResponse\"\x002\xaa\x15\n" +
+	"\x11IngestQueryCounts\x12'.flowrensic.v1.IngestQueryCountsRequest\x1a(.flowrensic.v1.IngestQueryCountsResponse\"\x002\xb0\x15\n" +
 	"\fQueryService\x12\\\n" +
 	"\rActivityStats\x12#.flowrensic.v1.ActivityStatsRequest\x1a$.flowrensic.v1.ActivityStatsResponse\"\x00\x12M\n" +
 	"\bListRuns\x12\x1e.flowrensic.v1.ListRunsRequest\x1a\x1f.flowrensic.v1.ListRunsResponse\"\x00\x12Y\n" +
@@ -63,9 +62,9 @@ const file_flowrensic_v1_services_proto_rawDesc = "" +
 	"\x11QuarantineHistory\x12'.flowrensic.v1.QuarantineHistoryRequest\x1a(.flowrensic.v1.QuarantineHistoryResponse\"\x00\x12_\n" +
 	"\x0eReleaseHistory\x12$.flowrensic.v1.ReleaseHistoryRequest\x1a%.flowrensic.v1.ReleaseHistoryResponse\"\x00\x12h\n" +
 	"\x11ListWorkflowTypes\x12'.flowrensic.v1.ListWorkflowTypesRequest\x1a(.flowrensic.v1.ListWorkflowTypesResponse\"\x00\x12b\n" +
-	"\x0fGetWorkflowType\x12%.flowrensic.v1.GetWorkflowTypeRequest\x1a&.flowrensic.v1.GetWorkflowTypeResponse\"\x00\x12e\n" +
-	"\x10ListEnvInstances\x12&.flowrensic.v1.ListEnvInstancesRequest\x1a'.flowrensic.v1.ListEnvInstancesResponse\"\x00\x12k\n" +
-	"\x12EnvInstanceMetrics\x12(.flowrensic.v1.EnvInstanceMetricsRequest\x1a).flowrensic.v1.EnvInstanceMetricsResponse\"\x00\x12\\\n" +
+	"\x0fGetWorkflowType\x12%.flowrensic.v1.GetWorkflowTypeRequest\x1a&.flowrensic.v1.GetWorkflowTypeResponse\"\x00\x12h\n" +
+	"\x11ListEphemeralRuns\x12'.flowrensic.v1.ListEphemeralRunsRequest\x1a(.flowrensic.v1.ListEphemeralRunsResponse\"\x00\x12n\n" +
+	"\x13EphemeralRunMetrics\x12).flowrensic.v1.EphemeralRunMetricsRequest\x1a*.flowrensic.v1.EphemeralRunMetricsResponse\"\x00\x12\\\n" +
 	"\rWorkerMetrics\x12#.flowrensic.v1.WorkerMetricsRequest\x1a$.flowrensic.v1.WorkerMetricsResponse\"\x00\x12\\\n" +
 	"\rCostBreakdown\x12#.flowrensic.v1.CostBreakdownRequest\x1a$.flowrensic.v1.CostBreakdownResponse\"\x00\x12\\\n" +
 	"\rGetDeployment\x12#.flowrensic.v1.GetDeploymentRequest\x1a$.flowrensic.v1.GetDeploymentResponse\"\x00\x12n\n" +
@@ -89,118 +88,118 @@ const file_flowrensic_v1_services_proto_rawDesc = "" +
 	"\x11com.flowrensic.v1B\rServicesProtoP\x01Z=go.flowrensic.com/sdk/internal/gen/flowrensic/v1;flowrensicv1\xa2\x02\x03FXX\xaa\x02\rFlowrensic.V1\xca\x02\rFlowrensic\\V1\xe2\x02\x19Flowrensic\\V1\\GPBMetadata\xea\x02\x0eFlowrensic::V1b\x06proto3"
 
 var file_flowrensic_v1_services_proto_goTypes = []any{
-	(*RegisterNamespaceRequest)(nil),         // 0: flowrensic.v1.RegisterNamespaceRequest
-	(*ListDeployEnvsRequest)(nil),            // 1: flowrensic.v1.ListDeployEnvsRequest
-	(*ListServersRequest)(nil),               // 2: flowrensic.v1.ListServersRequest
-	(*ListNamespacesRequest)(nil),            // 3: flowrensic.v1.ListNamespacesRequest
-	(*IngestActivityEventsRequest)(nil),      // 4: flowrensic.v1.IngestActivityEventsRequest
-	(*IngestHistoryRequest)(nil),             // 5: flowrensic.v1.IngestHistoryRequest
-	(*IngestReplayResultsRequest)(nil),       // 6: flowrensic.v1.IngestReplayResultsRequest
-	(*EnvInstanceHandshakeRequest)(nil),      // 7: flowrensic.v1.EnvInstanceHandshakeRequest
-	(*IngestEnvInstanceMetricsRequest)(nil),  // 8: flowrensic.v1.IngestEnvInstanceMetricsRequest
-	(*IngestWorkerMetricsRequest)(nil),       // 9: flowrensic.v1.IngestWorkerMetricsRequest
-	(*IngestEngineHistoryRequest)(nil),       // 10: flowrensic.v1.IngestEngineHistoryRequest
-	(*EnvInstanceHandoverRequest)(nil),       // 11: flowrensic.v1.EnvInstanceHandoverRequest
-	(*WorkerBeatRequest)(nil),                // 12: flowrensic.v1.WorkerBeatRequest
-	(*OldWorkersRequest)(nil),                // 13: flowrensic.v1.OldWorkersRequest
-	(*IngestDeployStageRequest)(nil),         // 14: flowrensic.v1.IngestDeployStageRequest
-	(*IngestClientCallsRequest)(nil),         // 15: flowrensic.v1.IngestClientCallsRequest
-	(*IngestQueryCountsRequest)(nil),         // 16: flowrensic.v1.IngestQueryCountsRequest
-	(*ActivityStatsRequest)(nil),             // 17: flowrensic.v1.ActivityStatsRequest
-	(*ListRunsRequest)(nil),                  // 18: flowrensic.v1.ListRunsRequest
-	(*ListFindingsRequest)(nil),              // 19: flowrensic.v1.ListFindingsRequest
-	(*ListAlertsRequest)(nil),                // 20: flowrensic.v1.ListAlertsRequest
-	(*EngineMetricsRequest)(nil),             // 21: flowrensic.v1.EngineMetricsRequest
-	(*UpdateRejectionsRequest)(nil),          // 22: flowrensic.v1.UpdateRejectionsRequest
-	(*ListReplayHistoriesRequest)(nil),       // 23: flowrensic.v1.ListReplayHistoriesRequest
-	(*ListReplayResultsRequest)(nil),         // 24: flowrensic.v1.ListReplayResultsRequest
-	(*ListReplayRequestsRequest)(nil),        // 25: flowrensic.v1.ListReplayRequestsRequest
-	(*ListReplaySetsRequest)(nil),            // 26: flowrensic.v1.ListReplaySetsRequest
-	(*GetReplaySetRequest)(nil),              // 27: flowrensic.v1.GetReplaySetRequest
-	(*QuarantineHistoryRequest)(nil),         // 28: flowrensic.v1.QuarantineHistoryRequest
-	(*ReleaseHistoryRequest)(nil),            // 29: flowrensic.v1.ReleaseHistoryRequest
-	(*ListWorkflowTypesRequest)(nil),         // 30: flowrensic.v1.ListWorkflowTypesRequest
-	(*GetWorkflowTypeRequest)(nil),           // 31: flowrensic.v1.GetWorkflowTypeRequest
-	(*ListEnvInstancesRequest)(nil),          // 32: flowrensic.v1.ListEnvInstancesRequest
-	(*EnvInstanceMetricsRequest)(nil),        // 33: flowrensic.v1.EnvInstanceMetricsRequest
-	(*WorkerMetricsRequest)(nil),             // 34: flowrensic.v1.WorkerMetricsRequest
-	(*CostBreakdownRequest)(nil),             // 35: flowrensic.v1.CostBreakdownRequest
-	(*GetDeploymentRequest)(nil),             // 36: flowrensic.v1.GetDeploymentRequest
-	(*DeployAttemptCountsRequest)(nil),       // 37: flowrensic.v1.DeployAttemptCountsRequest
-	(*ListThresholdsRequest)(nil),            // 38: flowrensic.v1.ListThresholdsRequest
-	(*GetFindingRequest)(nil),                // 39: flowrensic.v1.GetFindingRequest
-	(*SetFindingStatusRequest)(nil),          // 40: flowrensic.v1.SetFindingStatusRequest
-	(*GetServerConfigRequest)(nil),           // 41: flowrensic.v1.GetServerConfigRequest
-	(*GetStoredDataRequest)(nil),             // 42: flowrensic.v1.GetStoredDataRequest
-	(*GetCatchUpRequest)(nil),                // 43: flowrensic.v1.GetCatchUpRequest
-	(*GetLoadRequest)(nil),                   // 44: flowrensic.v1.GetLoadRequest
-	(*RemediationPlanRequest)(nil),           // 45: flowrensic.v1.RemediationPlanRequest
-	(*RemediateRequest)(nil),                 // 46: flowrensic.v1.RemediateRequest
-	(*ListRemediationsRequest)(nil),          // 47: flowrensic.v1.ListRemediationsRequest
-	(*RunJobRequest)(nil),                    // 48: flowrensic.v1.RunJobRequest
-	(*RegisterNamespaceResponse)(nil),        // 49: flowrensic.v1.RegisterNamespaceResponse
-	(*ListDeployEnvsResponse)(nil),           // 50: flowrensic.v1.ListDeployEnvsResponse
-	(*ListServersResponse)(nil),              // 51: flowrensic.v1.ListServersResponse
-	(*ListNamespacesResponse)(nil),           // 52: flowrensic.v1.ListNamespacesResponse
-	(*IngestActivityEventsResponse)(nil),     // 53: flowrensic.v1.IngestActivityEventsResponse
-	(*IngestHistoryResponse)(nil),            // 54: flowrensic.v1.IngestHistoryResponse
-	(*IngestReplayResultsResponse)(nil),      // 55: flowrensic.v1.IngestReplayResultsResponse
-	(*EnvInstanceHandshakeResponse)(nil),     // 56: flowrensic.v1.EnvInstanceHandshakeResponse
-	(*IngestEnvInstanceMetricsResponse)(nil), // 57: flowrensic.v1.IngestEnvInstanceMetricsResponse
-	(*IngestWorkerMetricsResponse)(nil),      // 58: flowrensic.v1.IngestWorkerMetricsResponse
-	(*IngestEngineHistoryResponse)(nil),      // 59: flowrensic.v1.IngestEngineHistoryResponse
-	(*EnvInstanceHandoverResponse)(nil),      // 60: flowrensic.v1.EnvInstanceHandoverResponse
-	(*WorkerBeatResponse)(nil),               // 61: flowrensic.v1.WorkerBeatResponse
-	(*OldWorkersResponse)(nil),               // 62: flowrensic.v1.OldWorkersResponse
-	(*IngestDeployStageResponse)(nil),        // 63: flowrensic.v1.IngestDeployStageResponse
-	(*IngestClientCallsResponse)(nil),        // 64: flowrensic.v1.IngestClientCallsResponse
-	(*IngestQueryCountsResponse)(nil),        // 65: flowrensic.v1.IngestQueryCountsResponse
-	(*ActivityStatsResponse)(nil),            // 66: flowrensic.v1.ActivityStatsResponse
-	(*ListRunsResponse)(nil),                 // 67: flowrensic.v1.ListRunsResponse
-	(*ListFindingsResponse)(nil),             // 68: flowrensic.v1.ListFindingsResponse
-	(*ListAlertsResponse)(nil),               // 69: flowrensic.v1.ListAlertsResponse
-	(*EngineMetricsResponse)(nil),            // 70: flowrensic.v1.EngineMetricsResponse
-	(*UpdateRejectionsResponse)(nil),         // 71: flowrensic.v1.UpdateRejectionsResponse
-	(*ListReplayHistoriesResponse)(nil),      // 72: flowrensic.v1.ListReplayHistoriesResponse
-	(*ListReplayResultsResponse)(nil),        // 73: flowrensic.v1.ListReplayResultsResponse
-	(*ListReplayRequestsResponse)(nil),       // 74: flowrensic.v1.ListReplayRequestsResponse
-	(*ListReplaySetsResponse)(nil),           // 75: flowrensic.v1.ListReplaySetsResponse
-	(*GetReplaySetResponse)(nil),             // 76: flowrensic.v1.GetReplaySetResponse
-	(*QuarantineHistoryResponse)(nil),        // 77: flowrensic.v1.QuarantineHistoryResponse
-	(*ReleaseHistoryResponse)(nil),           // 78: flowrensic.v1.ReleaseHistoryResponse
-	(*ListWorkflowTypesResponse)(nil),        // 79: flowrensic.v1.ListWorkflowTypesResponse
-	(*GetWorkflowTypeResponse)(nil),          // 80: flowrensic.v1.GetWorkflowTypeResponse
-	(*ListEnvInstancesResponse)(nil),         // 81: flowrensic.v1.ListEnvInstancesResponse
-	(*EnvInstanceMetricsResponse)(nil),       // 82: flowrensic.v1.EnvInstanceMetricsResponse
-	(*WorkerMetricsResponse)(nil),            // 83: flowrensic.v1.WorkerMetricsResponse
-	(*CostBreakdownResponse)(nil),            // 84: flowrensic.v1.CostBreakdownResponse
-	(*GetDeploymentResponse)(nil),            // 85: flowrensic.v1.GetDeploymentResponse
-	(*DeployAttemptCountsResponse)(nil),      // 86: flowrensic.v1.DeployAttemptCountsResponse
-	(*ListThresholdsResponse)(nil),           // 87: flowrensic.v1.ListThresholdsResponse
-	(*GetFindingResponse)(nil),               // 88: flowrensic.v1.GetFindingResponse
-	(*SetFindingStatusResponse)(nil),         // 89: flowrensic.v1.SetFindingStatusResponse
-	(*GetServerConfigResponse)(nil),          // 90: flowrensic.v1.GetServerConfigResponse
-	(*GetStoredDataResponse)(nil),            // 91: flowrensic.v1.GetStoredDataResponse
-	(*GetCatchUpResponse)(nil),               // 92: flowrensic.v1.GetCatchUpResponse
-	(*GetLoadResponse)(nil),                  // 93: flowrensic.v1.GetLoadResponse
-	(*RemediationPlanResponse)(nil),          // 94: flowrensic.v1.RemediationPlanResponse
-	(*RemediateResponse)(nil),                // 95: flowrensic.v1.RemediateResponse
-	(*ListRemediationsResponse)(nil),         // 96: flowrensic.v1.ListRemediationsResponse
-	(*RunJobResponse)(nil),                   // 97: flowrensic.v1.RunJobResponse
+	(*RegisterNamespaceRequest)(nil),          // 0: flowrensic.v1.RegisterNamespaceRequest
+	(*ListEnvsRequest)(nil),                   // 1: flowrensic.v1.ListEnvsRequest
+	(*ListServersRequest)(nil),                // 2: flowrensic.v1.ListServersRequest
+	(*ListNamespacesRequest)(nil),             // 3: flowrensic.v1.ListNamespacesRequest
+	(*IngestActivityEventsRequest)(nil),       // 4: flowrensic.v1.IngestActivityEventsRequest
+	(*IngestHistoryRequest)(nil),              // 5: flowrensic.v1.IngestHistoryRequest
+	(*IngestReplayResultsRequest)(nil),        // 6: flowrensic.v1.IngestReplayResultsRequest
+	(*EphemeralRunHandshakeRequest)(nil),      // 7: flowrensic.v1.EphemeralRunHandshakeRequest
+	(*IngestEphemeralRunMetricsRequest)(nil),  // 8: flowrensic.v1.IngestEphemeralRunMetricsRequest
+	(*IngestWorkerMetricsRequest)(nil),        // 9: flowrensic.v1.IngestWorkerMetricsRequest
+	(*IngestEngineHistoryRequest)(nil),        // 10: flowrensic.v1.IngestEngineHistoryRequest
+	(*EphemeralRunHandoverRequest)(nil),       // 11: flowrensic.v1.EphemeralRunHandoverRequest
+	(*WorkerBeatRequest)(nil),                 // 12: flowrensic.v1.WorkerBeatRequest
+	(*OldWorkersRequest)(nil),                 // 13: flowrensic.v1.OldWorkersRequest
+	(*IngestDeployStageRequest)(nil),          // 14: flowrensic.v1.IngestDeployStageRequest
+	(*IngestClientCallsRequest)(nil),          // 15: flowrensic.v1.IngestClientCallsRequest
+	(*IngestQueryCountsRequest)(nil),          // 16: flowrensic.v1.IngestQueryCountsRequest
+	(*ActivityStatsRequest)(nil),              // 17: flowrensic.v1.ActivityStatsRequest
+	(*ListRunsRequest)(nil),                   // 18: flowrensic.v1.ListRunsRequest
+	(*ListFindingsRequest)(nil),               // 19: flowrensic.v1.ListFindingsRequest
+	(*ListAlertsRequest)(nil),                 // 20: flowrensic.v1.ListAlertsRequest
+	(*EngineMetricsRequest)(nil),              // 21: flowrensic.v1.EngineMetricsRequest
+	(*UpdateRejectionsRequest)(nil),           // 22: flowrensic.v1.UpdateRejectionsRequest
+	(*ListReplayHistoriesRequest)(nil),        // 23: flowrensic.v1.ListReplayHistoriesRequest
+	(*ListReplayResultsRequest)(nil),          // 24: flowrensic.v1.ListReplayResultsRequest
+	(*ListReplayRequestsRequest)(nil),         // 25: flowrensic.v1.ListReplayRequestsRequest
+	(*ListReplaySetsRequest)(nil),             // 26: flowrensic.v1.ListReplaySetsRequest
+	(*GetReplaySetRequest)(nil),               // 27: flowrensic.v1.GetReplaySetRequest
+	(*QuarantineHistoryRequest)(nil),          // 28: flowrensic.v1.QuarantineHistoryRequest
+	(*ReleaseHistoryRequest)(nil),             // 29: flowrensic.v1.ReleaseHistoryRequest
+	(*ListWorkflowTypesRequest)(nil),          // 30: flowrensic.v1.ListWorkflowTypesRequest
+	(*GetWorkflowTypeRequest)(nil),            // 31: flowrensic.v1.GetWorkflowTypeRequest
+	(*ListEphemeralRunsRequest)(nil),          // 32: flowrensic.v1.ListEphemeralRunsRequest
+	(*EphemeralRunMetricsRequest)(nil),        // 33: flowrensic.v1.EphemeralRunMetricsRequest
+	(*WorkerMetricsRequest)(nil),              // 34: flowrensic.v1.WorkerMetricsRequest
+	(*CostBreakdownRequest)(nil),              // 35: flowrensic.v1.CostBreakdownRequest
+	(*GetDeploymentRequest)(nil),              // 36: flowrensic.v1.GetDeploymentRequest
+	(*DeployAttemptCountsRequest)(nil),        // 37: flowrensic.v1.DeployAttemptCountsRequest
+	(*ListThresholdsRequest)(nil),             // 38: flowrensic.v1.ListThresholdsRequest
+	(*GetFindingRequest)(nil),                 // 39: flowrensic.v1.GetFindingRequest
+	(*SetFindingStatusRequest)(nil),           // 40: flowrensic.v1.SetFindingStatusRequest
+	(*GetServerConfigRequest)(nil),            // 41: flowrensic.v1.GetServerConfigRequest
+	(*GetStoredDataRequest)(nil),              // 42: flowrensic.v1.GetStoredDataRequest
+	(*GetCatchUpRequest)(nil),                 // 43: flowrensic.v1.GetCatchUpRequest
+	(*GetLoadRequest)(nil),                    // 44: flowrensic.v1.GetLoadRequest
+	(*RemediationPlanRequest)(nil),            // 45: flowrensic.v1.RemediationPlanRequest
+	(*RemediateRequest)(nil),                  // 46: flowrensic.v1.RemediateRequest
+	(*ListRemediationsRequest)(nil),           // 47: flowrensic.v1.ListRemediationsRequest
+	(*RunJobRequest)(nil),                     // 48: flowrensic.v1.RunJobRequest
+	(*RegisterNamespaceResponse)(nil),         // 49: flowrensic.v1.RegisterNamespaceResponse
+	(*ListEnvsResponse)(nil),                  // 50: flowrensic.v1.ListEnvsResponse
+	(*ListServersResponse)(nil),               // 51: flowrensic.v1.ListServersResponse
+	(*ListNamespacesResponse)(nil),            // 52: flowrensic.v1.ListNamespacesResponse
+	(*IngestActivityEventsResponse)(nil),      // 53: flowrensic.v1.IngestActivityEventsResponse
+	(*IngestHistoryResponse)(nil),             // 54: flowrensic.v1.IngestHistoryResponse
+	(*IngestReplayResultsResponse)(nil),       // 55: flowrensic.v1.IngestReplayResultsResponse
+	(*EphemeralRunHandshakeResponse)(nil),     // 56: flowrensic.v1.EphemeralRunHandshakeResponse
+	(*IngestEphemeralRunMetricsResponse)(nil), // 57: flowrensic.v1.IngestEphemeralRunMetricsResponse
+	(*IngestWorkerMetricsResponse)(nil),       // 58: flowrensic.v1.IngestWorkerMetricsResponse
+	(*IngestEngineHistoryResponse)(nil),       // 59: flowrensic.v1.IngestEngineHistoryResponse
+	(*EphemeralRunHandoverResponse)(nil),      // 60: flowrensic.v1.EphemeralRunHandoverResponse
+	(*WorkerBeatResponse)(nil),                // 61: flowrensic.v1.WorkerBeatResponse
+	(*OldWorkersResponse)(nil),                // 62: flowrensic.v1.OldWorkersResponse
+	(*IngestDeployStageResponse)(nil),         // 63: flowrensic.v1.IngestDeployStageResponse
+	(*IngestClientCallsResponse)(nil),         // 64: flowrensic.v1.IngestClientCallsResponse
+	(*IngestQueryCountsResponse)(nil),         // 65: flowrensic.v1.IngestQueryCountsResponse
+	(*ActivityStatsResponse)(nil),             // 66: flowrensic.v1.ActivityStatsResponse
+	(*ListRunsResponse)(nil),                  // 67: flowrensic.v1.ListRunsResponse
+	(*ListFindingsResponse)(nil),              // 68: flowrensic.v1.ListFindingsResponse
+	(*ListAlertsResponse)(nil),                // 69: flowrensic.v1.ListAlertsResponse
+	(*EngineMetricsResponse)(nil),             // 70: flowrensic.v1.EngineMetricsResponse
+	(*UpdateRejectionsResponse)(nil),          // 71: flowrensic.v1.UpdateRejectionsResponse
+	(*ListReplayHistoriesResponse)(nil),       // 72: flowrensic.v1.ListReplayHistoriesResponse
+	(*ListReplayResultsResponse)(nil),         // 73: flowrensic.v1.ListReplayResultsResponse
+	(*ListReplayRequestsResponse)(nil),        // 74: flowrensic.v1.ListReplayRequestsResponse
+	(*ListReplaySetsResponse)(nil),            // 75: flowrensic.v1.ListReplaySetsResponse
+	(*GetReplaySetResponse)(nil),              // 76: flowrensic.v1.GetReplaySetResponse
+	(*QuarantineHistoryResponse)(nil),         // 77: flowrensic.v1.QuarantineHistoryResponse
+	(*ReleaseHistoryResponse)(nil),            // 78: flowrensic.v1.ReleaseHistoryResponse
+	(*ListWorkflowTypesResponse)(nil),         // 79: flowrensic.v1.ListWorkflowTypesResponse
+	(*GetWorkflowTypeResponse)(nil),           // 80: flowrensic.v1.GetWorkflowTypeResponse
+	(*ListEphemeralRunsResponse)(nil),         // 81: flowrensic.v1.ListEphemeralRunsResponse
+	(*EphemeralRunMetricsResponse)(nil),       // 82: flowrensic.v1.EphemeralRunMetricsResponse
+	(*WorkerMetricsResponse)(nil),             // 83: flowrensic.v1.WorkerMetricsResponse
+	(*CostBreakdownResponse)(nil),             // 84: flowrensic.v1.CostBreakdownResponse
+	(*GetDeploymentResponse)(nil),             // 85: flowrensic.v1.GetDeploymentResponse
+	(*DeployAttemptCountsResponse)(nil),       // 86: flowrensic.v1.DeployAttemptCountsResponse
+	(*ListThresholdsResponse)(nil),            // 87: flowrensic.v1.ListThresholdsResponse
+	(*GetFindingResponse)(nil),                // 88: flowrensic.v1.GetFindingResponse
+	(*SetFindingStatusResponse)(nil),          // 89: flowrensic.v1.SetFindingStatusResponse
+	(*GetServerConfigResponse)(nil),           // 90: flowrensic.v1.GetServerConfigResponse
+	(*GetStoredDataResponse)(nil),             // 91: flowrensic.v1.GetStoredDataResponse
+	(*GetCatchUpResponse)(nil),                // 92: flowrensic.v1.GetCatchUpResponse
+	(*GetLoadResponse)(nil),                   // 93: flowrensic.v1.GetLoadResponse
+	(*RemediationPlanResponse)(nil),           // 94: flowrensic.v1.RemediationPlanResponse
+	(*RemediateResponse)(nil),                 // 95: flowrensic.v1.RemediateResponse
+	(*ListRemediationsResponse)(nil),          // 96: flowrensic.v1.ListRemediationsResponse
+	(*RunJobResponse)(nil),                    // 97: flowrensic.v1.RunJobResponse
 }
 var file_flowrensic_v1_services_proto_depIdxs = []int32{
 	0,  // 0: flowrensic.v1.CatalogService.RegisterNamespace:input_type -> flowrensic.v1.RegisterNamespaceRequest
-	1,  // 1: flowrensic.v1.CatalogService.ListDeployEnvs:input_type -> flowrensic.v1.ListDeployEnvsRequest
+	1,  // 1: flowrensic.v1.CatalogService.ListEnvs:input_type -> flowrensic.v1.ListEnvsRequest
 	2,  // 2: flowrensic.v1.CatalogService.ListServers:input_type -> flowrensic.v1.ListServersRequest
 	3,  // 3: flowrensic.v1.CatalogService.ListNamespaces:input_type -> flowrensic.v1.ListNamespacesRequest
 	4,  // 4: flowrensic.v1.IngestService.IngestActivityEvents:input_type -> flowrensic.v1.IngestActivityEventsRequest
 	5,  // 5: flowrensic.v1.IngestService.IngestHistory:input_type -> flowrensic.v1.IngestHistoryRequest
 	6,  // 6: flowrensic.v1.IngestService.IngestReplayResults:input_type -> flowrensic.v1.IngestReplayResultsRequest
-	7,  // 7: flowrensic.v1.IngestService.EnvInstanceHandshake:input_type -> flowrensic.v1.EnvInstanceHandshakeRequest
-	8,  // 8: flowrensic.v1.IngestService.IngestEnvInstanceMetrics:input_type -> flowrensic.v1.IngestEnvInstanceMetricsRequest
+	7,  // 7: flowrensic.v1.IngestService.EphemeralRunHandshake:input_type -> flowrensic.v1.EphemeralRunHandshakeRequest
+	8,  // 8: flowrensic.v1.IngestService.IngestEphemeralRunMetrics:input_type -> flowrensic.v1.IngestEphemeralRunMetricsRequest
 	9,  // 9: flowrensic.v1.IngestService.IngestWorkerMetrics:input_type -> flowrensic.v1.IngestWorkerMetricsRequest
 	10, // 10: flowrensic.v1.IngestService.IngestEngineHistory:input_type -> flowrensic.v1.IngestEngineHistoryRequest
-	11, // 11: flowrensic.v1.IngestService.EnvInstanceHandover:input_type -> flowrensic.v1.EnvInstanceHandoverRequest
+	11, // 11: flowrensic.v1.IngestService.EphemeralRunHandover:input_type -> flowrensic.v1.EphemeralRunHandoverRequest
 	12, // 12: flowrensic.v1.IngestService.WorkerBeat:input_type -> flowrensic.v1.WorkerBeatRequest
 	13, // 13: flowrensic.v1.IngestService.OldWorkers:input_type -> flowrensic.v1.OldWorkersRequest
 	14, // 14: flowrensic.v1.IngestService.IngestDeployStage:input_type -> flowrensic.v1.IngestDeployStageRequest
@@ -221,8 +220,8 @@ var file_flowrensic_v1_services_proto_depIdxs = []int32{
 	29, // 29: flowrensic.v1.QueryService.ReleaseHistory:input_type -> flowrensic.v1.ReleaseHistoryRequest
 	30, // 30: flowrensic.v1.QueryService.ListWorkflowTypes:input_type -> flowrensic.v1.ListWorkflowTypesRequest
 	31, // 31: flowrensic.v1.QueryService.GetWorkflowType:input_type -> flowrensic.v1.GetWorkflowTypeRequest
-	32, // 32: flowrensic.v1.QueryService.ListEnvInstances:input_type -> flowrensic.v1.ListEnvInstancesRequest
-	33, // 33: flowrensic.v1.QueryService.EnvInstanceMetrics:input_type -> flowrensic.v1.EnvInstanceMetricsRequest
+	32, // 32: flowrensic.v1.QueryService.ListEphemeralRuns:input_type -> flowrensic.v1.ListEphemeralRunsRequest
+	33, // 33: flowrensic.v1.QueryService.EphemeralRunMetrics:input_type -> flowrensic.v1.EphemeralRunMetricsRequest
 	34, // 34: flowrensic.v1.QueryService.WorkerMetrics:input_type -> flowrensic.v1.WorkerMetricsRequest
 	35, // 35: flowrensic.v1.QueryService.CostBreakdown:input_type -> flowrensic.v1.CostBreakdownRequest
 	36, // 36: flowrensic.v1.QueryService.GetDeployment:input_type -> flowrensic.v1.GetDeploymentRequest
@@ -239,17 +238,17 @@ var file_flowrensic_v1_services_proto_depIdxs = []int32{
 	47, // 47: flowrensic.v1.RemediationService.ListRemediations:input_type -> flowrensic.v1.ListRemediationsRequest
 	48, // 48: flowrensic.v1.JobService.RunJob:input_type -> flowrensic.v1.RunJobRequest
 	49, // 49: flowrensic.v1.CatalogService.RegisterNamespace:output_type -> flowrensic.v1.RegisterNamespaceResponse
-	50, // 50: flowrensic.v1.CatalogService.ListDeployEnvs:output_type -> flowrensic.v1.ListDeployEnvsResponse
+	50, // 50: flowrensic.v1.CatalogService.ListEnvs:output_type -> flowrensic.v1.ListEnvsResponse
 	51, // 51: flowrensic.v1.CatalogService.ListServers:output_type -> flowrensic.v1.ListServersResponse
 	52, // 52: flowrensic.v1.CatalogService.ListNamespaces:output_type -> flowrensic.v1.ListNamespacesResponse
 	53, // 53: flowrensic.v1.IngestService.IngestActivityEvents:output_type -> flowrensic.v1.IngestActivityEventsResponse
 	54, // 54: flowrensic.v1.IngestService.IngestHistory:output_type -> flowrensic.v1.IngestHistoryResponse
 	55, // 55: flowrensic.v1.IngestService.IngestReplayResults:output_type -> flowrensic.v1.IngestReplayResultsResponse
-	56, // 56: flowrensic.v1.IngestService.EnvInstanceHandshake:output_type -> flowrensic.v1.EnvInstanceHandshakeResponse
-	57, // 57: flowrensic.v1.IngestService.IngestEnvInstanceMetrics:output_type -> flowrensic.v1.IngestEnvInstanceMetricsResponse
+	56, // 56: flowrensic.v1.IngestService.EphemeralRunHandshake:output_type -> flowrensic.v1.EphemeralRunHandshakeResponse
+	57, // 57: flowrensic.v1.IngestService.IngestEphemeralRunMetrics:output_type -> flowrensic.v1.IngestEphemeralRunMetricsResponse
 	58, // 58: flowrensic.v1.IngestService.IngestWorkerMetrics:output_type -> flowrensic.v1.IngestWorkerMetricsResponse
 	59, // 59: flowrensic.v1.IngestService.IngestEngineHistory:output_type -> flowrensic.v1.IngestEngineHistoryResponse
-	60, // 60: flowrensic.v1.IngestService.EnvInstanceHandover:output_type -> flowrensic.v1.EnvInstanceHandoverResponse
+	60, // 60: flowrensic.v1.IngestService.EphemeralRunHandover:output_type -> flowrensic.v1.EphemeralRunHandoverResponse
 	61, // 61: flowrensic.v1.IngestService.WorkerBeat:output_type -> flowrensic.v1.WorkerBeatResponse
 	62, // 62: flowrensic.v1.IngestService.OldWorkers:output_type -> flowrensic.v1.OldWorkersResponse
 	63, // 63: flowrensic.v1.IngestService.IngestDeployStage:output_type -> flowrensic.v1.IngestDeployStageResponse
@@ -270,8 +269,8 @@ var file_flowrensic_v1_services_proto_depIdxs = []int32{
 	78, // 78: flowrensic.v1.QueryService.ReleaseHistory:output_type -> flowrensic.v1.ReleaseHistoryResponse
 	79, // 79: flowrensic.v1.QueryService.ListWorkflowTypes:output_type -> flowrensic.v1.ListWorkflowTypesResponse
 	80, // 80: flowrensic.v1.QueryService.GetWorkflowType:output_type -> flowrensic.v1.GetWorkflowTypeResponse
-	81, // 81: flowrensic.v1.QueryService.ListEnvInstances:output_type -> flowrensic.v1.ListEnvInstancesResponse
-	82, // 82: flowrensic.v1.QueryService.EnvInstanceMetrics:output_type -> flowrensic.v1.EnvInstanceMetricsResponse
+	81, // 81: flowrensic.v1.QueryService.ListEphemeralRuns:output_type -> flowrensic.v1.ListEphemeralRunsResponse
+	82, // 82: flowrensic.v1.QueryService.EphemeralRunMetrics:output_type -> flowrensic.v1.EphemeralRunMetricsResponse
 	83, // 83: flowrensic.v1.QueryService.WorkerMetrics:output_type -> flowrensic.v1.WorkerMetricsResponse
 	84, // 84: flowrensic.v1.QueryService.CostBreakdown:output_type -> flowrensic.v1.CostBreakdownResponse
 	85, // 85: flowrensic.v1.QueryService.GetDeployment:output_type -> flowrensic.v1.GetDeploymentResponse
@@ -305,7 +304,7 @@ func file_flowrensic_v1_services_proto_init() {
 	file_flowrensic_v1_client_calls_proto_init()
 	file_flowrensic_v1_cost_proto_init()
 	file_flowrensic_v1_deploy_proto_init()
-	file_flowrensic_v1_env_instance_proto_init()
+	file_flowrensic_v1_ephemeral_run_proto_init()
 	file_flowrensic_v1_finding_proto_init()
 	file_flowrensic_v1_job_proto_init()
 	file_flowrensic_v1_load_proto_init()

@@ -44,9 +44,8 @@ const (
 	// CatalogServiceRegisterNamespaceProcedure is the fully-qualified name of the CatalogService's
 	// RegisterNamespace RPC.
 	CatalogServiceRegisterNamespaceProcedure = "/flowrensic.v1.CatalogService/RegisterNamespace"
-	// CatalogServiceListDeployEnvsProcedure is the fully-qualified name of the CatalogService's
-	// ListDeployEnvs RPC.
-	CatalogServiceListDeployEnvsProcedure = "/flowrensic.v1.CatalogService/ListDeployEnvs"
+	// CatalogServiceListEnvsProcedure is the fully-qualified name of the CatalogService's ListEnvs RPC.
+	CatalogServiceListEnvsProcedure = "/flowrensic.v1.CatalogService/ListEnvs"
 	// CatalogServiceListServersProcedure is the fully-qualified name of the CatalogService's
 	// ListServers RPC.
 	CatalogServiceListServersProcedure = "/flowrensic.v1.CatalogService/ListServers"
@@ -62,21 +61,21 @@ const (
 	// IngestServiceIngestReplayResultsProcedure is the fully-qualified name of the IngestService's
 	// IngestReplayResults RPC.
 	IngestServiceIngestReplayResultsProcedure = "/flowrensic.v1.IngestService/IngestReplayResults"
-	// IngestServiceEnvInstanceHandshakeProcedure is the fully-qualified name of the IngestService's
-	// EnvInstanceHandshake RPC.
-	IngestServiceEnvInstanceHandshakeProcedure = "/flowrensic.v1.IngestService/EnvInstanceHandshake"
-	// IngestServiceIngestEnvInstanceMetricsProcedure is the fully-qualified name of the IngestService's
-	// IngestEnvInstanceMetrics RPC.
-	IngestServiceIngestEnvInstanceMetricsProcedure = "/flowrensic.v1.IngestService/IngestEnvInstanceMetrics"
+	// IngestServiceEphemeralRunHandshakeProcedure is the fully-qualified name of the IngestService's
+	// EphemeralRunHandshake RPC.
+	IngestServiceEphemeralRunHandshakeProcedure = "/flowrensic.v1.IngestService/EphemeralRunHandshake"
+	// IngestServiceIngestEphemeralRunMetricsProcedure is the fully-qualified name of the
+	// IngestService's IngestEphemeralRunMetrics RPC.
+	IngestServiceIngestEphemeralRunMetricsProcedure = "/flowrensic.v1.IngestService/IngestEphemeralRunMetrics"
 	// IngestServiceIngestWorkerMetricsProcedure is the fully-qualified name of the IngestService's
 	// IngestWorkerMetrics RPC.
 	IngestServiceIngestWorkerMetricsProcedure = "/flowrensic.v1.IngestService/IngestWorkerMetrics"
 	// IngestServiceIngestEngineHistoryProcedure is the fully-qualified name of the IngestService's
 	// IngestEngineHistory RPC.
 	IngestServiceIngestEngineHistoryProcedure = "/flowrensic.v1.IngestService/IngestEngineHistory"
-	// IngestServiceEnvInstanceHandoverProcedure is the fully-qualified name of the IngestService's
-	// EnvInstanceHandover RPC.
-	IngestServiceEnvInstanceHandoverProcedure = "/flowrensic.v1.IngestService/EnvInstanceHandover"
+	// IngestServiceEphemeralRunHandoverProcedure is the fully-qualified name of the IngestService's
+	// EphemeralRunHandover RPC.
+	IngestServiceEphemeralRunHandoverProcedure = "/flowrensic.v1.IngestService/EphemeralRunHandover"
 	// IngestServiceWorkerBeatProcedure is the fully-qualified name of the IngestService's WorkerBeat
 	// RPC.
 	IngestServiceWorkerBeatProcedure = "/flowrensic.v1.IngestService/WorkerBeat"
@@ -135,12 +134,12 @@ const (
 	// QueryServiceGetWorkflowTypeProcedure is the fully-qualified name of the QueryService's
 	// GetWorkflowType RPC.
 	QueryServiceGetWorkflowTypeProcedure = "/flowrensic.v1.QueryService/GetWorkflowType"
-	// QueryServiceListEnvInstancesProcedure is the fully-qualified name of the QueryService's
-	// ListEnvInstances RPC.
-	QueryServiceListEnvInstancesProcedure = "/flowrensic.v1.QueryService/ListEnvInstances"
-	// QueryServiceEnvInstanceMetricsProcedure is the fully-qualified name of the QueryService's
-	// EnvInstanceMetrics RPC.
-	QueryServiceEnvInstanceMetricsProcedure = "/flowrensic.v1.QueryService/EnvInstanceMetrics"
+	// QueryServiceListEphemeralRunsProcedure is the fully-qualified name of the QueryService's
+	// ListEphemeralRuns RPC.
+	QueryServiceListEphemeralRunsProcedure = "/flowrensic.v1.QueryService/ListEphemeralRuns"
+	// QueryServiceEphemeralRunMetricsProcedure is the fully-qualified name of the QueryService's
+	// EphemeralRunMetrics RPC.
+	QueryServiceEphemeralRunMetricsProcedure = "/flowrensic.v1.QueryService/EphemeralRunMetrics"
 	// QueryServiceWorkerMetricsProcedure is the fully-qualified name of the QueryService's
 	// WorkerMetrics RPC.
 	QueryServiceWorkerMetricsProcedure = "/flowrensic.v1.QueryService/WorkerMetrics"
@@ -187,7 +186,7 @@ const (
 // CatalogServiceClient is a client for the flowrensic.v1.CatalogService service.
 type CatalogServiceClient interface {
 	RegisterNamespace(context.Context, *connect.Request[v1.RegisterNamespaceRequest]) (*connect.Response[v1.RegisterNamespaceResponse], error)
-	ListDeployEnvs(context.Context, *connect.Request[v1.ListDeployEnvsRequest]) (*connect.Response[v1.ListDeployEnvsResponse], error)
+	ListEnvs(context.Context, *connect.Request[v1.ListEnvsRequest]) (*connect.Response[v1.ListEnvsResponse], error)
 	ListServers(context.Context, *connect.Request[v1.ListServersRequest]) (*connect.Response[v1.ListServersResponse], error)
 	ListNamespaces(context.Context, *connect.Request[v1.ListNamespacesRequest]) (*connect.Response[v1.ListNamespacesResponse], error)
 }
@@ -209,10 +208,10 @@ func NewCatalogServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(catalogServiceMethods.ByName("RegisterNamespace")),
 			connect.WithClientOptions(opts...),
 		),
-		listDeployEnvs: connect.NewClient[v1.ListDeployEnvsRequest, v1.ListDeployEnvsResponse](
+		listEnvs: connect.NewClient[v1.ListEnvsRequest, v1.ListEnvsResponse](
 			httpClient,
-			baseURL+CatalogServiceListDeployEnvsProcedure,
-			connect.WithSchema(catalogServiceMethods.ByName("ListDeployEnvs")),
+			baseURL+CatalogServiceListEnvsProcedure,
+			connect.WithSchema(catalogServiceMethods.ByName("ListEnvs")),
 			connect.WithClientOptions(opts...),
 		),
 		listServers: connect.NewClient[v1.ListServersRequest, v1.ListServersResponse](
@@ -233,7 +232,7 @@ func NewCatalogServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 // catalogServiceClient implements CatalogServiceClient.
 type catalogServiceClient struct {
 	registerNamespace *connect.Client[v1.RegisterNamespaceRequest, v1.RegisterNamespaceResponse]
-	listDeployEnvs    *connect.Client[v1.ListDeployEnvsRequest, v1.ListDeployEnvsResponse]
+	listEnvs          *connect.Client[v1.ListEnvsRequest, v1.ListEnvsResponse]
 	listServers       *connect.Client[v1.ListServersRequest, v1.ListServersResponse]
 	listNamespaces    *connect.Client[v1.ListNamespacesRequest, v1.ListNamespacesResponse]
 }
@@ -243,9 +242,9 @@ func (c *catalogServiceClient) RegisterNamespace(ctx context.Context, req *conne
 	return c.registerNamespace.CallUnary(ctx, req)
 }
 
-// ListDeployEnvs calls flowrensic.v1.CatalogService.ListDeployEnvs.
-func (c *catalogServiceClient) ListDeployEnvs(ctx context.Context, req *connect.Request[v1.ListDeployEnvsRequest]) (*connect.Response[v1.ListDeployEnvsResponse], error) {
-	return c.listDeployEnvs.CallUnary(ctx, req)
+// ListEnvs calls flowrensic.v1.CatalogService.ListEnvs.
+func (c *catalogServiceClient) ListEnvs(ctx context.Context, req *connect.Request[v1.ListEnvsRequest]) (*connect.Response[v1.ListEnvsResponse], error) {
+	return c.listEnvs.CallUnary(ctx, req)
 }
 
 // ListServers calls flowrensic.v1.CatalogService.ListServers.
@@ -261,7 +260,7 @@ func (c *catalogServiceClient) ListNamespaces(ctx context.Context, req *connect.
 // CatalogServiceHandler is an implementation of the flowrensic.v1.CatalogService service.
 type CatalogServiceHandler interface {
 	RegisterNamespace(context.Context, *connect.Request[v1.RegisterNamespaceRequest]) (*connect.Response[v1.RegisterNamespaceResponse], error)
-	ListDeployEnvs(context.Context, *connect.Request[v1.ListDeployEnvsRequest]) (*connect.Response[v1.ListDeployEnvsResponse], error)
+	ListEnvs(context.Context, *connect.Request[v1.ListEnvsRequest]) (*connect.Response[v1.ListEnvsResponse], error)
 	ListServers(context.Context, *connect.Request[v1.ListServersRequest]) (*connect.Response[v1.ListServersResponse], error)
 	ListNamespaces(context.Context, *connect.Request[v1.ListNamespacesRequest]) (*connect.Response[v1.ListNamespacesResponse], error)
 }
@@ -279,10 +278,10 @@ func NewCatalogServiceHandler(svc CatalogServiceHandler, opts ...connect.Handler
 		connect.WithSchema(catalogServiceMethods.ByName("RegisterNamespace")),
 		connect.WithHandlerOptions(opts...),
 	)
-	catalogServiceListDeployEnvsHandler := connect.NewUnaryHandler(
-		CatalogServiceListDeployEnvsProcedure,
-		svc.ListDeployEnvs,
-		connect.WithSchema(catalogServiceMethods.ByName("ListDeployEnvs")),
+	catalogServiceListEnvsHandler := connect.NewUnaryHandler(
+		CatalogServiceListEnvsProcedure,
+		svc.ListEnvs,
+		connect.WithSchema(catalogServiceMethods.ByName("ListEnvs")),
 		connect.WithHandlerOptions(opts...),
 	)
 	catalogServiceListServersHandler := connect.NewUnaryHandler(
@@ -301,8 +300,8 @@ func NewCatalogServiceHandler(svc CatalogServiceHandler, opts ...connect.Handler
 		switch r.URL.Path {
 		case CatalogServiceRegisterNamespaceProcedure:
 			catalogServiceRegisterNamespaceHandler.ServeHTTP(w, r)
-		case CatalogServiceListDeployEnvsProcedure:
-			catalogServiceListDeployEnvsHandler.ServeHTTP(w, r)
+		case CatalogServiceListEnvsProcedure:
+			catalogServiceListEnvsHandler.ServeHTTP(w, r)
 		case CatalogServiceListServersProcedure:
 			catalogServiceListServersHandler.ServeHTTP(w, r)
 		case CatalogServiceListNamespacesProcedure:
@@ -320,8 +319,8 @@ func (UnimplementedCatalogServiceHandler) RegisterNamespace(context.Context, *co
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("flowrensic.v1.CatalogService.RegisterNamespace is not implemented"))
 }
 
-func (UnimplementedCatalogServiceHandler) ListDeployEnvs(context.Context, *connect.Request[v1.ListDeployEnvsRequest]) (*connect.Response[v1.ListDeployEnvsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("flowrensic.v1.CatalogService.ListDeployEnvs is not implemented"))
+func (UnimplementedCatalogServiceHandler) ListEnvs(context.Context, *connect.Request[v1.ListEnvsRequest]) (*connect.Response[v1.ListEnvsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("flowrensic.v1.CatalogService.ListEnvs is not implemented"))
 }
 
 func (UnimplementedCatalogServiceHandler) ListServers(context.Context, *connect.Request[v1.ListServersRequest]) (*connect.Response[v1.ListServersResponse], error) {
@@ -343,16 +342,16 @@ type IngestServiceClient interface {
 	// IngestReplayResults takes the verdicts a pipeline produced. The replay ran
 	// in the customer's SDK against the checkout under test; this is the report.
 	IngestReplayResults(context.Context, *connect.Request[v1.IngestReplayResultsRequest]) (*connect.Response[v1.IngestReplayResultsResponse], error)
-	// EnvInstanceHandshake is the one call a worker makes at startup. The answer
+	// EphemeralRunHandshake is the one call a worker makes at startup. The answer
 	// says whether it collects the engine's metrics and how often.
-	EnvInstanceHandshake(context.Context, *connect.Request[v1.EnvInstanceHandshakeRequest]) (*connect.Response[v1.EnvInstanceHandshakeResponse], error)
-	IngestEnvInstanceMetrics(context.Context, *connect.Request[v1.IngestEnvInstanceMetricsRequest]) (*connect.Response[v1.IngestEnvInstanceMetricsResponse], error)
+	EphemeralRunHandshake(context.Context, *connect.Request[v1.EphemeralRunHandshakeRequest]) (*connect.Response[v1.EphemeralRunHandshakeResponse], error)
+	IngestEphemeralRunMetrics(context.Context, *connect.Request[v1.IngestEphemeralRunMetricsRequest]) (*connect.Response[v1.IngestEphemeralRunMetricsResponse], error)
 	// IngestWorkerMetrics takes what a worker's own metrics endpoint exported.
 	IngestWorkerMetrics(context.Context, *connect.Request[v1.IngestWorkerMetricsRequest]) (*connect.Response[v1.IngestWorkerMetricsResponse], error)
 	// IngestEngineHistory takes a history a worker read over gRPC, for an engine
 	// the backend cannot reach itself.
 	IngestEngineHistory(context.Context, *connect.Request[v1.IngestEngineHistoryRequest]) (*connect.Response[v1.IngestEngineHistoryResponse], error)
-	EnvInstanceHandover(context.Context, *connect.Request[v1.EnvInstanceHandoverRequest]) (*connect.Response[v1.EnvInstanceHandoverResponse], error)
+	EphemeralRunHandover(context.Context, *connect.Request[v1.EphemeralRunHandoverRequest]) (*connect.Response[v1.EphemeralRunHandoverResponse], error)
 	// WorkerBeat says a worker is still up.
 	WorkerBeat(context.Context, *connect.Request[v1.WorkerBeatRequest]) (*connect.Response[v1.WorkerBeatResponse], error)
 	// OldWorkers answers how many workers of an env are up with a version that is
@@ -395,16 +394,16 @@ func NewIngestServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			connect.WithSchema(ingestServiceMethods.ByName("IngestReplayResults")),
 			connect.WithClientOptions(opts...),
 		),
-		envInstanceHandshake: connect.NewClient[v1.EnvInstanceHandshakeRequest, v1.EnvInstanceHandshakeResponse](
+		ephemeralRunHandshake: connect.NewClient[v1.EphemeralRunHandshakeRequest, v1.EphemeralRunHandshakeResponse](
 			httpClient,
-			baseURL+IngestServiceEnvInstanceHandshakeProcedure,
-			connect.WithSchema(ingestServiceMethods.ByName("EnvInstanceHandshake")),
+			baseURL+IngestServiceEphemeralRunHandshakeProcedure,
+			connect.WithSchema(ingestServiceMethods.ByName("EphemeralRunHandshake")),
 			connect.WithClientOptions(opts...),
 		),
-		ingestEnvInstanceMetrics: connect.NewClient[v1.IngestEnvInstanceMetricsRequest, v1.IngestEnvInstanceMetricsResponse](
+		ingestEphemeralRunMetrics: connect.NewClient[v1.IngestEphemeralRunMetricsRequest, v1.IngestEphemeralRunMetricsResponse](
 			httpClient,
-			baseURL+IngestServiceIngestEnvInstanceMetricsProcedure,
-			connect.WithSchema(ingestServiceMethods.ByName("IngestEnvInstanceMetrics")),
+			baseURL+IngestServiceIngestEphemeralRunMetricsProcedure,
+			connect.WithSchema(ingestServiceMethods.ByName("IngestEphemeralRunMetrics")),
 			connect.WithClientOptions(opts...),
 		),
 		ingestWorkerMetrics: connect.NewClient[v1.IngestWorkerMetricsRequest, v1.IngestWorkerMetricsResponse](
@@ -419,10 +418,10 @@ func NewIngestServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			connect.WithSchema(ingestServiceMethods.ByName("IngestEngineHistory")),
 			connect.WithClientOptions(opts...),
 		),
-		envInstanceHandover: connect.NewClient[v1.EnvInstanceHandoverRequest, v1.EnvInstanceHandoverResponse](
+		ephemeralRunHandover: connect.NewClient[v1.EphemeralRunHandoverRequest, v1.EphemeralRunHandoverResponse](
 			httpClient,
-			baseURL+IngestServiceEnvInstanceHandoverProcedure,
-			connect.WithSchema(ingestServiceMethods.ByName("EnvInstanceHandover")),
+			baseURL+IngestServiceEphemeralRunHandoverProcedure,
+			connect.WithSchema(ingestServiceMethods.ByName("EphemeralRunHandover")),
 			connect.WithClientOptions(opts...),
 		),
 		workerBeat: connect.NewClient[v1.WorkerBeatRequest, v1.WorkerBeatResponse](
@@ -460,19 +459,19 @@ func NewIngestServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 
 // ingestServiceClient implements IngestServiceClient.
 type ingestServiceClient struct {
-	ingestActivityEvents     *connect.Client[v1.IngestActivityEventsRequest, v1.IngestActivityEventsResponse]
-	ingestHistory            *connect.Client[v1.IngestHistoryRequest, v1.IngestHistoryResponse]
-	ingestReplayResults      *connect.Client[v1.IngestReplayResultsRequest, v1.IngestReplayResultsResponse]
-	envInstanceHandshake     *connect.Client[v1.EnvInstanceHandshakeRequest, v1.EnvInstanceHandshakeResponse]
-	ingestEnvInstanceMetrics *connect.Client[v1.IngestEnvInstanceMetricsRequest, v1.IngestEnvInstanceMetricsResponse]
-	ingestWorkerMetrics      *connect.Client[v1.IngestWorkerMetricsRequest, v1.IngestWorkerMetricsResponse]
-	ingestEngineHistory      *connect.Client[v1.IngestEngineHistoryRequest, v1.IngestEngineHistoryResponse]
-	envInstanceHandover      *connect.Client[v1.EnvInstanceHandoverRequest, v1.EnvInstanceHandoverResponse]
-	workerBeat               *connect.Client[v1.WorkerBeatRequest, v1.WorkerBeatResponse]
-	oldWorkers               *connect.Client[v1.OldWorkersRequest, v1.OldWorkersResponse]
-	ingestDeployStage        *connect.Client[v1.IngestDeployStageRequest, v1.IngestDeployStageResponse]
-	ingestClientCalls        *connect.Client[v1.IngestClientCallsRequest, v1.IngestClientCallsResponse]
-	ingestQueryCounts        *connect.Client[v1.IngestQueryCountsRequest, v1.IngestQueryCountsResponse]
+	ingestActivityEvents      *connect.Client[v1.IngestActivityEventsRequest, v1.IngestActivityEventsResponse]
+	ingestHistory             *connect.Client[v1.IngestHistoryRequest, v1.IngestHistoryResponse]
+	ingestReplayResults       *connect.Client[v1.IngestReplayResultsRequest, v1.IngestReplayResultsResponse]
+	ephemeralRunHandshake     *connect.Client[v1.EphemeralRunHandshakeRequest, v1.EphemeralRunHandshakeResponse]
+	ingestEphemeralRunMetrics *connect.Client[v1.IngestEphemeralRunMetricsRequest, v1.IngestEphemeralRunMetricsResponse]
+	ingestWorkerMetrics       *connect.Client[v1.IngestWorkerMetricsRequest, v1.IngestWorkerMetricsResponse]
+	ingestEngineHistory       *connect.Client[v1.IngestEngineHistoryRequest, v1.IngestEngineHistoryResponse]
+	ephemeralRunHandover      *connect.Client[v1.EphemeralRunHandoverRequest, v1.EphemeralRunHandoverResponse]
+	workerBeat                *connect.Client[v1.WorkerBeatRequest, v1.WorkerBeatResponse]
+	oldWorkers                *connect.Client[v1.OldWorkersRequest, v1.OldWorkersResponse]
+	ingestDeployStage         *connect.Client[v1.IngestDeployStageRequest, v1.IngestDeployStageResponse]
+	ingestClientCalls         *connect.Client[v1.IngestClientCallsRequest, v1.IngestClientCallsResponse]
+	ingestQueryCounts         *connect.Client[v1.IngestQueryCountsRequest, v1.IngestQueryCountsResponse]
 }
 
 // IngestActivityEvents calls flowrensic.v1.IngestService.IngestActivityEvents.
@@ -490,14 +489,14 @@ func (c *ingestServiceClient) IngestReplayResults(ctx context.Context, req *conn
 	return c.ingestReplayResults.CallUnary(ctx, req)
 }
 
-// EnvInstanceHandshake calls flowrensic.v1.IngestService.EnvInstanceHandshake.
-func (c *ingestServiceClient) EnvInstanceHandshake(ctx context.Context, req *connect.Request[v1.EnvInstanceHandshakeRequest]) (*connect.Response[v1.EnvInstanceHandshakeResponse], error) {
-	return c.envInstanceHandshake.CallUnary(ctx, req)
+// EphemeralRunHandshake calls flowrensic.v1.IngestService.EphemeralRunHandshake.
+func (c *ingestServiceClient) EphemeralRunHandshake(ctx context.Context, req *connect.Request[v1.EphemeralRunHandshakeRequest]) (*connect.Response[v1.EphemeralRunHandshakeResponse], error) {
+	return c.ephemeralRunHandshake.CallUnary(ctx, req)
 }
 
-// IngestEnvInstanceMetrics calls flowrensic.v1.IngestService.IngestEnvInstanceMetrics.
-func (c *ingestServiceClient) IngestEnvInstanceMetrics(ctx context.Context, req *connect.Request[v1.IngestEnvInstanceMetricsRequest]) (*connect.Response[v1.IngestEnvInstanceMetricsResponse], error) {
-	return c.ingestEnvInstanceMetrics.CallUnary(ctx, req)
+// IngestEphemeralRunMetrics calls flowrensic.v1.IngestService.IngestEphemeralRunMetrics.
+func (c *ingestServiceClient) IngestEphemeralRunMetrics(ctx context.Context, req *connect.Request[v1.IngestEphemeralRunMetricsRequest]) (*connect.Response[v1.IngestEphemeralRunMetricsResponse], error) {
+	return c.ingestEphemeralRunMetrics.CallUnary(ctx, req)
 }
 
 // IngestWorkerMetrics calls flowrensic.v1.IngestService.IngestWorkerMetrics.
@@ -510,9 +509,9 @@ func (c *ingestServiceClient) IngestEngineHistory(ctx context.Context, req *conn
 	return c.ingestEngineHistory.CallUnary(ctx, req)
 }
 
-// EnvInstanceHandover calls flowrensic.v1.IngestService.EnvInstanceHandover.
-func (c *ingestServiceClient) EnvInstanceHandover(ctx context.Context, req *connect.Request[v1.EnvInstanceHandoverRequest]) (*connect.Response[v1.EnvInstanceHandoverResponse], error) {
-	return c.envInstanceHandover.CallUnary(ctx, req)
+// EphemeralRunHandover calls flowrensic.v1.IngestService.EphemeralRunHandover.
+func (c *ingestServiceClient) EphemeralRunHandover(ctx context.Context, req *connect.Request[v1.EphemeralRunHandoverRequest]) (*connect.Response[v1.EphemeralRunHandoverResponse], error) {
+	return c.ephemeralRunHandover.CallUnary(ctx, req)
 }
 
 // WorkerBeat calls flowrensic.v1.IngestService.WorkerBeat.
@@ -551,16 +550,16 @@ type IngestServiceHandler interface {
 	// IngestReplayResults takes the verdicts a pipeline produced. The replay ran
 	// in the customer's SDK against the checkout under test; this is the report.
 	IngestReplayResults(context.Context, *connect.Request[v1.IngestReplayResultsRequest]) (*connect.Response[v1.IngestReplayResultsResponse], error)
-	// EnvInstanceHandshake is the one call a worker makes at startup. The answer
+	// EphemeralRunHandshake is the one call a worker makes at startup. The answer
 	// says whether it collects the engine's metrics and how often.
-	EnvInstanceHandshake(context.Context, *connect.Request[v1.EnvInstanceHandshakeRequest]) (*connect.Response[v1.EnvInstanceHandshakeResponse], error)
-	IngestEnvInstanceMetrics(context.Context, *connect.Request[v1.IngestEnvInstanceMetricsRequest]) (*connect.Response[v1.IngestEnvInstanceMetricsResponse], error)
+	EphemeralRunHandshake(context.Context, *connect.Request[v1.EphemeralRunHandshakeRequest]) (*connect.Response[v1.EphemeralRunHandshakeResponse], error)
+	IngestEphemeralRunMetrics(context.Context, *connect.Request[v1.IngestEphemeralRunMetricsRequest]) (*connect.Response[v1.IngestEphemeralRunMetricsResponse], error)
 	// IngestWorkerMetrics takes what a worker's own metrics endpoint exported.
 	IngestWorkerMetrics(context.Context, *connect.Request[v1.IngestWorkerMetricsRequest]) (*connect.Response[v1.IngestWorkerMetricsResponse], error)
 	// IngestEngineHistory takes a history a worker read over gRPC, for an engine
 	// the backend cannot reach itself.
 	IngestEngineHistory(context.Context, *connect.Request[v1.IngestEngineHistoryRequest]) (*connect.Response[v1.IngestEngineHistoryResponse], error)
-	EnvInstanceHandover(context.Context, *connect.Request[v1.EnvInstanceHandoverRequest]) (*connect.Response[v1.EnvInstanceHandoverResponse], error)
+	EphemeralRunHandover(context.Context, *connect.Request[v1.EphemeralRunHandoverRequest]) (*connect.Response[v1.EphemeralRunHandoverResponse], error)
 	// WorkerBeat says a worker is still up.
 	WorkerBeat(context.Context, *connect.Request[v1.WorkerBeatRequest]) (*connect.Response[v1.WorkerBeatResponse], error)
 	// OldWorkers answers how many workers of an env are up with a version that is
@@ -599,16 +598,16 @@ func NewIngestServiceHandler(svc IngestServiceHandler, opts ...connect.HandlerOp
 		connect.WithSchema(ingestServiceMethods.ByName("IngestReplayResults")),
 		connect.WithHandlerOptions(opts...),
 	)
-	ingestServiceEnvInstanceHandshakeHandler := connect.NewUnaryHandler(
-		IngestServiceEnvInstanceHandshakeProcedure,
-		svc.EnvInstanceHandshake,
-		connect.WithSchema(ingestServiceMethods.ByName("EnvInstanceHandshake")),
+	ingestServiceEphemeralRunHandshakeHandler := connect.NewUnaryHandler(
+		IngestServiceEphemeralRunHandshakeProcedure,
+		svc.EphemeralRunHandshake,
+		connect.WithSchema(ingestServiceMethods.ByName("EphemeralRunHandshake")),
 		connect.WithHandlerOptions(opts...),
 	)
-	ingestServiceIngestEnvInstanceMetricsHandler := connect.NewUnaryHandler(
-		IngestServiceIngestEnvInstanceMetricsProcedure,
-		svc.IngestEnvInstanceMetrics,
-		connect.WithSchema(ingestServiceMethods.ByName("IngestEnvInstanceMetrics")),
+	ingestServiceIngestEphemeralRunMetricsHandler := connect.NewUnaryHandler(
+		IngestServiceIngestEphemeralRunMetricsProcedure,
+		svc.IngestEphemeralRunMetrics,
+		connect.WithSchema(ingestServiceMethods.ByName("IngestEphemeralRunMetrics")),
 		connect.WithHandlerOptions(opts...),
 	)
 	ingestServiceIngestWorkerMetricsHandler := connect.NewUnaryHandler(
@@ -623,10 +622,10 @@ func NewIngestServiceHandler(svc IngestServiceHandler, opts ...connect.HandlerOp
 		connect.WithSchema(ingestServiceMethods.ByName("IngestEngineHistory")),
 		connect.WithHandlerOptions(opts...),
 	)
-	ingestServiceEnvInstanceHandoverHandler := connect.NewUnaryHandler(
-		IngestServiceEnvInstanceHandoverProcedure,
-		svc.EnvInstanceHandover,
-		connect.WithSchema(ingestServiceMethods.ByName("EnvInstanceHandover")),
+	ingestServiceEphemeralRunHandoverHandler := connect.NewUnaryHandler(
+		IngestServiceEphemeralRunHandoverProcedure,
+		svc.EphemeralRunHandover,
+		connect.WithSchema(ingestServiceMethods.ByName("EphemeralRunHandover")),
 		connect.WithHandlerOptions(opts...),
 	)
 	ingestServiceWorkerBeatHandler := connect.NewUnaryHandler(
@@ -667,16 +666,16 @@ func NewIngestServiceHandler(svc IngestServiceHandler, opts ...connect.HandlerOp
 			ingestServiceIngestHistoryHandler.ServeHTTP(w, r)
 		case IngestServiceIngestReplayResultsProcedure:
 			ingestServiceIngestReplayResultsHandler.ServeHTTP(w, r)
-		case IngestServiceEnvInstanceHandshakeProcedure:
-			ingestServiceEnvInstanceHandshakeHandler.ServeHTTP(w, r)
-		case IngestServiceIngestEnvInstanceMetricsProcedure:
-			ingestServiceIngestEnvInstanceMetricsHandler.ServeHTTP(w, r)
+		case IngestServiceEphemeralRunHandshakeProcedure:
+			ingestServiceEphemeralRunHandshakeHandler.ServeHTTP(w, r)
+		case IngestServiceIngestEphemeralRunMetricsProcedure:
+			ingestServiceIngestEphemeralRunMetricsHandler.ServeHTTP(w, r)
 		case IngestServiceIngestWorkerMetricsProcedure:
 			ingestServiceIngestWorkerMetricsHandler.ServeHTTP(w, r)
 		case IngestServiceIngestEngineHistoryProcedure:
 			ingestServiceIngestEngineHistoryHandler.ServeHTTP(w, r)
-		case IngestServiceEnvInstanceHandoverProcedure:
-			ingestServiceEnvInstanceHandoverHandler.ServeHTTP(w, r)
+		case IngestServiceEphemeralRunHandoverProcedure:
+			ingestServiceEphemeralRunHandoverHandler.ServeHTTP(w, r)
 		case IngestServiceWorkerBeatProcedure:
 			ingestServiceWorkerBeatHandler.ServeHTTP(w, r)
 		case IngestServiceOldWorkersProcedure:
@@ -708,12 +707,12 @@ func (UnimplementedIngestServiceHandler) IngestReplayResults(context.Context, *c
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("flowrensic.v1.IngestService.IngestReplayResults is not implemented"))
 }
 
-func (UnimplementedIngestServiceHandler) EnvInstanceHandshake(context.Context, *connect.Request[v1.EnvInstanceHandshakeRequest]) (*connect.Response[v1.EnvInstanceHandshakeResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("flowrensic.v1.IngestService.EnvInstanceHandshake is not implemented"))
+func (UnimplementedIngestServiceHandler) EphemeralRunHandshake(context.Context, *connect.Request[v1.EphemeralRunHandshakeRequest]) (*connect.Response[v1.EphemeralRunHandshakeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("flowrensic.v1.IngestService.EphemeralRunHandshake is not implemented"))
 }
 
-func (UnimplementedIngestServiceHandler) IngestEnvInstanceMetrics(context.Context, *connect.Request[v1.IngestEnvInstanceMetricsRequest]) (*connect.Response[v1.IngestEnvInstanceMetricsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("flowrensic.v1.IngestService.IngestEnvInstanceMetrics is not implemented"))
+func (UnimplementedIngestServiceHandler) IngestEphemeralRunMetrics(context.Context, *connect.Request[v1.IngestEphemeralRunMetricsRequest]) (*connect.Response[v1.IngestEphemeralRunMetricsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("flowrensic.v1.IngestService.IngestEphemeralRunMetrics is not implemented"))
 }
 
 func (UnimplementedIngestServiceHandler) IngestWorkerMetrics(context.Context, *connect.Request[v1.IngestWorkerMetricsRequest]) (*connect.Response[v1.IngestWorkerMetricsResponse], error) {
@@ -724,8 +723,8 @@ func (UnimplementedIngestServiceHandler) IngestEngineHistory(context.Context, *c
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("flowrensic.v1.IngestService.IngestEngineHistory is not implemented"))
 }
 
-func (UnimplementedIngestServiceHandler) EnvInstanceHandover(context.Context, *connect.Request[v1.EnvInstanceHandoverRequest]) (*connect.Response[v1.EnvInstanceHandoverResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("flowrensic.v1.IngestService.EnvInstanceHandover is not implemented"))
+func (UnimplementedIngestServiceHandler) EphemeralRunHandover(context.Context, *connect.Request[v1.EphemeralRunHandoverRequest]) (*connect.Response[v1.EphemeralRunHandoverResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("flowrensic.v1.IngestService.EphemeralRunHandover is not implemented"))
 }
 
 func (UnimplementedIngestServiceHandler) WorkerBeat(context.Context, *connect.Request[v1.WorkerBeatRequest]) (*connect.Response[v1.WorkerBeatResponse], error) {
@@ -775,8 +774,8 @@ type QueryServiceClient interface {
 	ReleaseHistory(context.Context, *connect.Request[v1.ReleaseHistoryRequest]) (*connect.Response[v1.ReleaseHistoryResponse], error)
 	ListWorkflowTypes(context.Context, *connect.Request[v1.ListWorkflowTypesRequest]) (*connect.Response[v1.ListWorkflowTypesResponse], error)
 	GetWorkflowType(context.Context, *connect.Request[v1.GetWorkflowTypeRequest]) (*connect.Response[v1.GetWorkflowTypeResponse], error)
-	ListEnvInstances(context.Context, *connect.Request[v1.ListEnvInstancesRequest]) (*connect.Response[v1.ListEnvInstancesResponse], error)
-	EnvInstanceMetrics(context.Context, *connect.Request[v1.EnvInstanceMetricsRequest]) (*connect.Response[v1.EnvInstanceMetricsResponse], error)
+	ListEphemeralRuns(context.Context, *connect.Request[v1.ListEphemeralRunsRequest]) (*connect.Response[v1.ListEphemeralRunsResponse], error)
+	EphemeralRunMetrics(context.Context, *connect.Request[v1.EphemeralRunMetricsRequest]) (*connect.Response[v1.EphemeralRunMetricsResponse], error)
 	WorkerMetrics(context.Context, *connect.Request[v1.WorkerMetricsRequest]) (*connect.Response[v1.WorkerMetricsResponse], error)
 	// CostBreakdown counts the billable events of one namespace over two windows
 	// of the configured length, broken down by workflow type, by task queue and
@@ -909,16 +908,16 @@ func NewQueryServiceClient(httpClient connect.HTTPClient, baseURL string, opts .
 			connect.WithSchema(queryServiceMethods.ByName("GetWorkflowType")),
 			connect.WithClientOptions(opts...),
 		),
-		listEnvInstances: connect.NewClient[v1.ListEnvInstancesRequest, v1.ListEnvInstancesResponse](
+		listEphemeralRuns: connect.NewClient[v1.ListEphemeralRunsRequest, v1.ListEphemeralRunsResponse](
 			httpClient,
-			baseURL+QueryServiceListEnvInstancesProcedure,
-			connect.WithSchema(queryServiceMethods.ByName("ListEnvInstances")),
+			baseURL+QueryServiceListEphemeralRunsProcedure,
+			connect.WithSchema(queryServiceMethods.ByName("ListEphemeralRuns")),
 			connect.WithClientOptions(opts...),
 		),
-		envInstanceMetrics: connect.NewClient[v1.EnvInstanceMetricsRequest, v1.EnvInstanceMetricsResponse](
+		ephemeralRunMetrics: connect.NewClient[v1.EphemeralRunMetricsRequest, v1.EphemeralRunMetricsResponse](
 			httpClient,
-			baseURL+QueryServiceEnvInstanceMetricsProcedure,
-			connect.WithSchema(queryServiceMethods.ByName("EnvInstanceMetrics")),
+			baseURL+QueryServiceEphemeralRunMetricsProcedure,
+			connect.WithSchema(queryServiceMethods.ByName("EphemeralRunMetrics")),
 			connect.WithClientOptions(opts...),
 		),
 		workerMetrics: connect.NewClient[v1.WorkerMetricsRequest, v1.WorkerMetricsResponse](
@@ -1007,8 +1006,8 @@ type queryServiceClient struct {
 	releaseHistory      *connect.Client[v1.ReleaseHistoryRequest, v1.ReleaseHistoryResponse]
 	listWorkflowTypes   *connect.Client[v1.ListWorkflowTypesRequest, v1.ListWorkflowTypesResponse]
 	getWorkflowType     *connect.Client[v1.GetWorkflowTypeRequest, v1.GetWorkflowTypeResponse]
-	listEnvInstances    *connect.Client[v1.ListEnvInstancesRequest, v1.ListEnvInstancesResponse]
-	envInstanceMetrics  *connect.Client[v1.EnvInstanceMetricsRequest, v1.EnvInstanceMetricsResponse]
+	listEphemeralRuns   *connect.Client[v1.ListEphemeralRunsRequest, v1.ListEphemeralRunsResponse]
+	ephemeralRunMetrics *connect.Client[v1.EphemeralRunMetricsRequest, v1.EphemeralRunMetricsResponse]
 	workerMetrics       *connect.Client[v1.WorkerMetricsRequest, v1.WorkerMetricsResponse]
 	costBreakdown       *connect.Client[v1.CostBreakdownRequest, v1.CostBreakdownResponse]
 	getDeployment       *connect.Client[v1.GetDeploymentRequest, v1.GetDeploymentResponse]
@@ -1097,14 +1096,14 @@ func (c *queryServiceClient) GetWorkflowType(ctx context.Context, req *connect.R
 	return c.getWorkflowType.CallUnary(ctx, req)
 }
 
-// ListEnvInstances calls flowrensic.v1.QueryService.ListEnvInstances.
-func (c *queryServiceClient) ListEnvInstances(ctx context.Context, req *connect.Request[v1.ListEnvInstancesRequest]) (*connect.Response[v1.ListEnvInstancesResponse], error) {
-	return c.listEnvInstances.CallUnary(ctx, req)
+// ListEphemeralRuns calls flowrensic.v1.QueryService.ListEphemeralRuns.
+func (c *queryServiceClient) ListEphemeralRuns(ctx context.Context, req *connect.Request[v1.ListEphemeralRunsRequest]) (*connect.Response[v1.ListEphemeralRunsResponse], error) {
+	return c.listEphemeralRuns.CallUnary(ctx, req)
 }
 
-// EnvInstanceMetrics calls flowrensic.v1.QueryService.EnvInstanceMetrics.
-func (c *queryServiceClient) EnvInstanceMetrics(ctx context.Context, req *connect.Request[v1.EnvInstanceMetricsRequest]) (*connect.Response[v1.EnvInstanceMetricsResponse], error) {
-	return c.envInstanceMetrics.CallUnary(ctx, req)
+// EphemeralRunMetrics calls flowrensic.v1.QueryService.EphemeralRunMetrics.
+func (c *queryServiceClient) EphemeralRunMetrics(ctx context.Context, req *connect.Request[v1.EphemeralRunMetricsRequest]) (*connect.Response[v1.EphemeralRunMetricsResponse], error) {
+	return c.ephemeralRunMetrics.CallUnary(ctx, req)
 }
 
 // WorkerMetrics calls flowrensic.v1.QueryService.WorkerMetrics.
@@ -1189,8 +1188,8 @@ type QueryServiceHandler interface {
 	ReleaseHistory(context.Context, *connect.Request[v1.ReleaseHistoryRequest]) (*connect.Response[v1.ReleaseHistoryResponse], error)
 	ListWorkflowTypes(context.Context, *connect.Request[v1.ListWorkflowTypesRequest]) (*connect.Response[v1.ListWorkflowTypesResponse], error)
 	GetWorkflowType(context.Context, *connect.Request[v1.GetWorkflowTypeRequest]) (*connect.Response[v1.GetWorkflowTypeResponse], error)
-	ListEnvInstances(context.Context, *connect.Request[v1.ListEnvInstancesRequest]) (*connect.Response[v1.ListEnvInstancesResponse], error)
-	EnvInstanceMetrics(context.Context, *connect.Request[v1.EnvInstanceMetricsRequest]) (*connect.Response[v1.EnvInstanceMetricsResponse], error)
+	ListEphemeralRuns(context.Context, *connect.Request[v1.ListEphemeralRunsRequest]) (*connect.Response[v1.ListEphemeralRunsResponse], error)
+	EphemeralRunMetrics(context.Context, *connect.Request[v1.EphemeralRunMetricsRequest]) (*connect.Response[v1.EphemeralRunMetricsResponse], error)
 	WorkerMetrics(context.Context, *connect.Request[v1.WorkerMetricsRequest]) (*connect.Response[v1.WorkerMetricsResponse], error)
 	// CostBreakdown counts the billable events of one namespace over two windows
 	// of the configured length, broken down by workflow type, by task queue and
@@ -1319,16 +1318,16 @@ func NewQueryServiceHandler(svc QueryServiceHandler, opts ...connect.HandlerOpti
 		connect.WithSchema(queryServiceMethods.ByName("GetWorkflowType")),
 		connect.WithHandlerOptions(opts...),
 	)
-	queryServiceListEnvInstancesHandler := connect.NewUnaryHandler(
-		QueryServiceListEnvInstancesProcedure,
-		svc.ListEnvInstances,
-		connect.WithSchema(queryServiceMethods.ByName("ListEnvInstances")),
+	queryServiceListEphemeralRunsHandler := connect.NewUnaryHandler(
+		QueryServiceListEphemeralRunsProcedure,
+		svc.ListEphemeralRuns,
+		connect.WithSchema(queryServiceMethods.ByName("ListEphemeralRuns")),
 		connect.WithHandlerOptions(opts...),
 	)
-	queryServiceEnvInstanceMetricsHandler := connect.NewUnaryHandler(
-		QueryServiceEnvInstanceMetricsProcedure,
-		svc.EnvInstanceMetrics,
-		connect.WithSchema(queryServiceMethods.ByName("EnvInstanceMetrics")),
+	queryServiceEphemeralRunMetricsHandler := connect.NewUnaryHandler(
+		QueryServiceEphemeralRunMetricsProcedure,
+		svc.EphemeralRunMetrics,
+		connect.WithSchema(queryServiceMethods.ByName("EphemeralRunMetrics")),
 		connect.WithHandlerOptions(opts...),
 	)
 	queryServiceWorkerMetricsHandler := connect.NewUnaryHandler(
@@ -1429,10 +1428,10 @@ func NewQueryServiceHandler(svc QueryServiceHandler, opts ...connect.HandlerOpti
 			queryServiceListWorkflowTypesHandler.ServeHTTP(w, r)
 		case QueryServiceGetWorkflowTypeProcedure:
 			queryServiceGetWorkflowTypeHandler.ServeHTTP(w, r)
-		case QueryServiceListEnvInstancesProcedure:
-			queryServiceListEnvInstancesHandler.ServeHTTP(w, r)
-		case QueryServiceEnvInstanceMetricsProcedure:
-			queryServiceEnvInstanceMetricsHandler.ServeHTTP(w, r)
+		case QueryServiceListEphemeralRunsProcedure:
+			queryServiceListEphemeralRunsHandler.ServeHTTP(w, r)
+		case QueryServiceEphemeralRunMetricsProcedure:
+			queryServiceEphemeralRunMetricsHandler.ServeHTTP(w, r)
 		case QueryServiceWorkerMetricsProcedure:
 			queryServiceWorkerMetricsHandler.ServeHTTP(w, r)
 		case QueryServiceCostBreakdownProcedure:
@@ -1524,12 +1523,12 @@ func (UnimplementedQueryServiceHandler) GetWorkflowType(context.Context, *connec
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("flowrensic.v1.QueryService.GetWorkflowType is not implemented"))
 }
 
-func (UnimplementedQueryServiceHandler) ListEnvInstances(context.Context, *connect.Request[v1.ListEnvInstancesRequest]) (*connect.Response[v1.ListEnvInstancesResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("flowrensic.v1.QueryService.ListEnvInstances is not implemented"))
+func (UnimplementedQueryServiceHandler) ListEphemeralRuns(context.Context, *connect.Request[v1.ListEphemeralRunsRequest]) (*connect.Response[v1.ListEphemeralRunsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("flowrensic.v1.QueryService.ListEphemeralRuns is not implemented"))
 }
 
-func (UnimplementedQueryServiceHandler) EnvInstanceMetrics(context.Context, *connect.Request[v1.EnvInstanceMetricsRequest]) (*connect.Response[v1.EnvInstanceMetricsResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("flowrensic.v1.QueryService.EnvInstanceMetrics is not implemented"))
+func (UnimplementedQueryServiceHandler) EphemeralRunMetrics(context.Context, *connect.Request[v1.EphemeralRunMetricsRequest]) (*connect.Response[v1.EphemeralRunMetricsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("flowrensic.v1.QueryService.EphemeralRunMetrics is not implemented"))
 }
 
 func (UnimplementedQueryServiceHandler) WorkerMetrics(context.Context, *connect.Request[v1.WorkerMetricsRequest]) (*connect.Response[v1.WorkerMetricsResponse], error) {

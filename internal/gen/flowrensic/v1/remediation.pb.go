@@ -232,8 +232,10 @@ func (x *RemediationChoice) GetRuns() []*RemediationRun {
 }
 
 type RemediationPlanRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	FindingId     string                 `protobuf:"bytes,1,opt,name=finding_id,json=findingId,proto3" json:"finding_id,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	FindingId string                 `protobuf:"bytes,1,opt,name=finding_id,json=findingId,proto3" json:"finding_id,omitempty"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -275,6 +277,13 @@ func (x *RemediationPlanRequest) GetFindingId() string {
 	return ""
 }
 
+func (x *RemediationPlanRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 type RemediationPlanResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// choices are the options the finding offers, in the order Terminate,
@@ -289,7 +298,9 @@ type RemediationPlanResponse struct {
 	// off_reason is why the Remediate button is off, empty when an option fits
 	// the finding: it holds no run, no run is open or failed, or acting on the
 	// runs does not fix its class.
-	OffReason     string `protobuf:"bytes,5,opt,name=off_reason,json=offReason,proto3" json:"off_reason,omitempty"`
+	OffReason string `protobuf:"bytes,5,opt,name=off_reason,json=offReason,proto3" json:"off_reason,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,6,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -357,6 +368,13 @@ func (x *RemediationPlanResponse) GetOffReason() string {
 		return x.OffReason
 	}
 	return ""
+}
+
+func (x *RemediationPlanResponse) GetPage() *PageResponse {
+	if x != nil {
+		return x.Page
+	}
+	return nil
 }
 
 // RemediatedRun is what happened to one run.
@@ -661,8 +679,10 @@ func (x *RemediateResponse) GetRemediation() *Remediation {
 }
 
 type ListRemediationsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	FindingId     string                 `protobuf:"bytes,1,opt,name=finding_id,json=findingId,proto3" json:"finding_id,omitempty"`
+	state     protoimpl.MessageState `protogen:"open.v1"`
+	FindingId string                 `protobuf:"bytes,1,opt,name=finding_id,json=findingId,proto3" json:"finding_id,omitempty"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -704,10 +724,19 @@ func (x *ListRemediationsRequest) GetFindingId() string {
 	return ""
 }
 
+func (x *ListRemediationsRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 type ListRemediationsResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// remediations are the newest first.
-	Remediations  []*Remediation `protobuf:"bytes,1,rep,name=remediations,proto3" json:"remediations,omitempty"`
+	Remediations []*Remediation `protobuf:"bytes,1,rep,name=remediations,proto3" json:"remediations,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -749,11 +778,18 @@ func (x *ListRemediationsResponse) GetRemediations() []*Remediation {
 	return nil
 }
 
+func (x *ListRemediationsResponse) GetPage() *PageResponse {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 var File_flowrensic_v1_remediation_proto protoreflect.FileDescriptor
 
 const file_flowrensic_v1_remediation_proto_rawDesc = "" +
 	"\n" +
-	"\x1fflowrensic/v1/remediation.proto\x12\rflowrensic.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xca\x01\n" +
+	"\x1fflowrensic/v1/remediation.proto\x12\rflowrensic.v1\x1a\x18flowrensic/v1/page.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xca\x01\n" +
 	"\x0eRemediationRun\x12\x1f\n" +
 	"\vworkflow_id\x18\x01 \x01(\tR\n" +
 	"workflowId\x12\x15\n" +
@@ -765,17 +801,19 @@ const file_flowrensic_v1_remediation_proto_rawDesc = "" +
 	"\x03env\x18\a \x01(\tR\x03env\"\x80\x01\n" +
 	"\x11RemediationChoice\x128\n" +
 	"\x06option\x18\x01 \x01(\x0e2 .flowrensic.v1.RemediationOptionR\x06option\x121\n" +
-	"\x04runs\x18\x02 \x03(\v2\x1d.flowrensic.v1.RemediationRunR\x04runs\"7\n" +
+	"\x04runs\x18\x02 \x03(\v2\x1d.flowrensic.v1.RemediationRunR\x04runs\"g\n" +
 	"\x16RemediationPlanRequest\x12\x1d\n" +
 	"\n" +
-	"finding_id\x18\x01 \x01(\tR\tfindingId\"\xc3\x01\n" +
+	"finding_id\x18\x01 \x01(\tR\tfindingId\x12.\n" +
+	"\x04page\x18\x02 \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04page\"\xf4\x01\n" +
 	"\x17RemediationPlanResponse\x12:\n" +
 	"\achoices\x18\x01 \x03(\v2 .flowrensic.v1.RemediationChoiceR\achoices\x12\x17\n" +
 	"\acan_act\x18\x02 \x01(\bR\x06canAct\x12\x17\n" +
 	"\awhy_not\x18\x03 \x01(\tR\x06whyNot\x12\x1b\n" +
 	"\tgone_runs\x18\x04 \x01(\x05R\bgoneRuns\x12\x1d\n" +
 	"\n" +
-	"off_reason\x18\x05 \x01(\tR\toffReason\"\x8b\x01\n" +
+	"off_reason\x18\x05 \x01(\tR\toffReason\x12/\n" +
+	"\x04page\x18\x06 \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04page\"\x8b\x01\n" +
 	"\rRemediatedRun\x12\x1f\n" +
 	"\vworkflow_id\x18\x01 \x01(\tR\n" +
 	"workflowId\x12\x15\n" +
@@ -802,12 +840,14 @@ const file_flowrensic_v1_remediation_proto_rawDesc = "" +
 	"\x06reason\x18\x04 \x01(\tR\x06reason\x12\x12\n" +
 	"\x04user\x18\x05 \x01(\tR\x04user\"Q\n" +
 	"\x11RemediateResponse\x12<\n" +
-	"\vremediation\x18\x01 \x01(\v2\x1a.flowrensic.v1.RemediationR\vremediation\"8\n" +
+	"\vremediation\x18\x01 \x01(\v2\x1a.flowrensic.v1.RemediationR\vremediation\"h\n" +
 	"\x17ListRemediationsRequest\x12\x1d\n" +
 	"\n" +
-	"finding_id\x18\x01 \x01(\tR\tfindingId\"Z\n" +
+	"finding_id\x18\x01 \x01(\tR\tfindingId\x12.\n" +
+	"\x04page\x18\x02 \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04page\"\x8b\x01\n" +
 	"\x18ListRemediationsResponse\x12>\n" +
-	"\fremediations\x18\x01 \x03(\v2\x1a.flowrensic.v1.RemediationR\fremediations*\x96\x01\n" +
+	"\fremediations\x18\x01 \x03(\v2\x1a.flowrensic.v1.RemediationR\fremediations\x12/\n" +
+	"\x04page\x18\x02 \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04page*\x96\x01\n" +
 	"\x11RemediationOption\x12\"\n" +
 	"\x1eREMEDIATION_OPTION_UNSPECIFIED\x10\x00\x12 \n" +
 	"\x1cREMEDIATION_OPTION_TERMINATE\x10\x01\x12\x1d\n" +
@@ -841,23 +881,29 @@ var file_flowrensic_v1_remediation_proto_goTypes = []any{
 	(*RemediateResponse)(nil),        // 8: flowrensic.v1.RemediateResponse
 	(*ListRemediationsRequest)(nil),  // 9: flowrensic.v1.ListRemediationsRequest
 	(*ListRemediationsResponse)(nil), // 10: flowrensic.v1.ListRemediationsResponse
-	(*timestamppb.Timestamp)(nil),    // 11: google.protobuf.Timestamp
+	(*PageRequest)(nil),              // 11: flowrensic.v1.PageRequest
+	(*PageResponse)(nil),             // 12: flowrensic.v1.PageResponse
+	(*timestamppb.Timestamp)(nil),    // 13: google.protobuf.Timestamp
 }
 var file_flowrensic_v1_remediation_proto_depIdxs = []int32{
 	0,  // 0: flowrensic.v1.RemediationChoice.option:type_name -> flowrensic.v1.RemediationOption
 	1,  // 1: flowrensic.v1.RemediationChoice.runs:type_name -> flowrensic.v1.RemediationRun
-	2,  // 2: flowrensic.v1.RemediationPlanResponse.choices:type_name -> flowrensic.v1.RemediationChoice
-	0,  // 3: flowrensic.v1.Remediation.option:type_name -> flowrensic.v1.RemediationOption
-	11, // 4: flowrensic.v1.Remediation.at:type_name -> google.protobuf.Timestamp
-	5,  // 5: flowrensic.v1.Remediation.runs:type_name -> flowrensic.v1.RemediatedRun
-	0,  // 6: flowrensic.v1.RemediateRequest.option:type_name -> flowrensic.v1.RemediationOption
-	6,  // 7: flowrensic.v1.RemediateResponse.remediation:type_name -> flowrensic.v1.Remediation
-	6,  // 8: flowrensic.v1.ListRemediationsResponse.remediations:type_name -> flowrensic.v1.Remediation
-	9,  // [9:9] is the sub-list for method output_type
-	9,  // [9:9] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	11, // 2: flowrensic.v1.RemediationPlanRequest.page:type_name -> flowrensic.v1.PageRequest
+	2,  // 3: flowrensic.v1.RemediationPlanResponse.choices:type_name -> flowrensic.v1.RemediationChoice
+	12, // 4: flowrensic.v1.RemediationPlanResponse.page:type_name -> flowrensic.v1.PageResponse
+	0,  // 5: flowrensic.v1.Remediation.option:type_name -> flowrensic.v1.RemediationOption
+	13, // 6: flowrensic.v1.Remediation.at:type_name -> google.protobuf.Timestamp
+	5,  // 7: flowrensic.v1.Remediation.runs:type_name -> flowrensic.v1.RemediatedRun
+	0,  // 8: flowrensic.v1.RemediateRequest.option:type_name -> flowrensic.v1.RemediationOption
+	6,  // 9: flowrensic.v1.RemediateResponse.remediation:type_name -> flowrensic.v1.Remediation
+	11, // 10: flowrensic.v1.ListRemediationsRequest.page:type_name -> flowrensic.v1.PageRequest
+	6,  // 11: flowrensic.v1.ListRemediationsResponse.remediations:type_name -> flowrensic.v1.Remediation
+	12, // 12: flowrensic.v1.ListRemediationsResponse.page:type_name -> flowrensic.v1.PageResponse
+	13, // [13:13] is the sub-list for method output_type
+	13, // [13:13] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_flowrensic_v1_remediation_proto_init() }
@@ -865,6 +911,7 @@ func file_flowrensic_v1_remediation_proto_init() {
 	if File_flowrensic_v1_remediation_proto != nil {
 		return
 	}
+	file_flowrensic_v1_page_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

@@ -83,8 +83,11 @@ func (Outcome) EnumDescriptor() ([]byte, []int) {
 // ActivityAttempt is one execution attempt of one activity. One event per
 // attempt, not per activity: the gap between the two is the retry count.
 type ActivityAttempt struct {
-	state               protoimpl.MessageState `protogen:"open.v1"`
-	NamespaceId         string                 `protobuf:"bytes,1,opt,name=namespace_id,json=namespaceId,proto3" json:"namespace_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// namespace is the name of the Temporal namespace the attempt ran in, as
+	// Temporal gives it. The server finds the namespace by the env of the call
+	// and this name, and registers it when it is new.
+	Namespace           string                 `protobuf:"bytes,21,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	WorkflowType        string                 `protobuf:"bytes,2,opt,name=workflow_type,json=workflowType,proto3" json:"workflow_type,omitempty"`
 	WorkflowExecutionId string                 `protobuf:"bytes,3,opt,name=workflow_execution_id,json=workflowExecutionId,proto3" json:"workflow_execution_id,omitempty"`
 	RunKey              string                 `protobuf:"bytes,4,opt,name=run_key,json=runKey,proto3" json:"run_key,omitempty"`
@@ -97,12 +100,11 @@ type ActivityAttempt struct {
 	StartedAt           *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
 	EndedAt             *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=ended_at,json=endedAt,proto3" json:"ended_at,omitempty"`
 	DurationMs          int64                  `protobuf:"varint,13,opt,name=duration_ms,json=durationMs,proto3" json:"duration_ms,omitempty"`
-	// Deployment environment the worker runs in, as the env list names it.
-	// namespace_id is empty when Flowrensic does not know the namespace, which
-	// is every env whose engine lives inside the job.
-	Env string `protobuf:"bytes,14,opt,name=env,proto3" json:"env,omitempty"`
-	// Which run of that env this is. A long lived env sends one fixed value.
-	EnvInstanceId string `protobuf:"bytes,15,opt,name=env_instance_id,json=envInstanceId,proto3" json:"env_instance_id,omitempty"`
+	// Deployment environment the worker runs in, as the env list names it, and
+	// the ephemeral run of it. Set by the server on a list from the headers of
+	// the call that sent the attempt, and not read on ingest.
+	Env          string `protobuf:"bytes,14,opt,name=env,proto3" json:"env,omitempty"`
+	EphemeralRun string `protobuf:"bytes,15,opt,name=ephemeral_run,json=ephemeralRun,proto3" json:"ephemeral_run,omitempty"`
 	// The version the worker was configured with. Empty when it carries none,
 	// and a run whose version is empty is on neither side of an overlap.
 	Version string `protobuf:"bytes,16,opt,name=version,proto3" json:"version,omitempty"`
@@ -151,9 +153,9 @@ func (*ActivityAttempt) Descriptor() ([]byte, []int) {
 	return file_flowrensic_v1_activity_metrics_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *ActivityAttempt) GetNamespaceId() string {
+func (x *ActivityAttempt) GetNamespace() string {
 	if x != nil {
-		return x.NamespaceId
+		return x.Namespace
 	}
 	return ""
 }
@@ -249,9 +251,9 @@ func (x *ActivityAttempt) GetEnv() string {
 	return ""
 }
 
-func (x *ActivityAttempt) GetEnvInstanceId() string {
+func (x *ActivityAttempt) GetEphemeralRun() string {
 	if x != nil {
-		return x.EnvInstanceId
+		return x.EphemeralRun
 	}
 	return ""
 }
@@ -298,7 +300,7 @@ func (x *ActivityAttempt) GetScheduledAt() *timestamppb.Timestamp {
 type ActivityStats struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
 	NamespaceId  string                 `protobuf:"bytes,1,opt,name=namespace_id,json=namespaceId,proto3" json:"namespace_id,omitempty"`
-	DeployEnv    string                 `protobuf:"bytes,2,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
+	Env          string                 `protobuf:"bytes,2,opt,name=env,proto3" json:"env,omitempty"`
 	WorkflowType string                 `protobuf:"bytes,3,opt,name=workflow_type,json=workflowType,proto3" json:"workflow_type,omitempty"`
 	ActivityType string                 `protobuf:"bytes,4,opt,name=activity_type,json=activityType,proto3" json:"activity_type,omitempty"`
 	// The configured pair every attempt in this row ran under. A change starts a
@@ -360,9 +362,9 @@ func (x *ActivityStats) GetNamespaceId() string {
 	return ""
 }
 
-func (x *ActivityStats) GetDeployEnv() string {
+func (x *ActivityStats) GetEnv() string {
 	if x != nil {
-		return x.DeployEnv
+		return x.Env
 	}
 	return ""
 }
@@ -505,8 +507,11 @@ type IngestActivityEventsRequest struct {
 	// The buffer that sends the call and the number of this send, which goes up
 	// by one per new send. A send taken before is answered and not stored
 	// again. Empty sender: the call is taken as it comes.
-	Sender        string `protobuf:"bytes,4,opt,name=sender,proto3" json:"sender,omitempty"`
-	SendNumber    int64  `protobuf:"varint,5,opt,name=send_number,json=sendNumber,proto3" json:"send_number,omitempty"`
+	Sender     string `protobuf:"bytes,4,opt,name=sender,proto3" json:"sender,omitempty"`
+	SendNumber int64  `protobuf:"varint,5,opt,name=send_number,json=sendNumber,proto3" json:"send_number,omitempty"`
+	// The name the worker was given when it started, the same for every copy
+	// of the same worker, FPP-011-R06. Empty: the worker has no name.
+	WorkerName    string `protobuf:"bytes,6,opt,name=worker_name,json=workerName,proto3" json:"worker_name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -574,6 +579,13 @@ func (x *IngestActivityEventsRequest) GetSendNumber() int64 {
 		return x.SendNumber
 	}
 	return 0
+}
+
+func (x *IngestActivityEventsRequest) GetWorkerName() string {
+	if x != nil {
+		return x.WorkerName
+	}
+	return ""
 }
 
 // One env's counts of a worker's buffer. env is the env the records carry,
@@ -698,7 +710,7 @@ type WorkflowRun struct {
 	RunKey              string                 `protobuf:"bytes,2,opt,name=run_key,json=runKey,proto3" json:"run_key,omitempty"`
 	WorkflowType        string                 `protobuf:"bytes,3,opt,name=workflow_type,json=workflowType,proto3" json:"workflow_type,omitempty"`
 	NamespaceId         string                 `protobuf:"bytes,4,opt,name=namespace_id,json=namespaceId,proto3" json:"namespace_id,omitempty"`
-	DeployEnv           string                 `protobuf:"bytes,5,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
+	Env                 string                 `protobuf:"bytes,5,opt,name=env,proto3" json:"env,omitempty"`
 	Activities          int32                  `protobuf:"varint,6,opt,name=activities,proto3" json:"activities,omitempty"`
 	Attempts            int32                  `protobuf:"varint,7,opt,name=attempts,proto3" json:"attempts,omitempty"`
 	Retries             int32                  `protobuf:"varint,8,opt,name=retries,proto3" json:"retries,omitempty"`
@@ -706,7 +718,7 @@ type WorkflowRun struct {
 	StartedAt           *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=started_at,json=startedAt,proto3" json:"started_at,omitempty"`
 	LastSeen            *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=last_seen,json=lastSeen,proto3" json:"last_seen,omitempty"`
 	// Which run of the environment the attempts came from.
-	EnvInstanceId string `protobuf:"bytes,12,opt,name=env_instance_id,json=envInstanceId,proto3" json:"env_instance_id,omitempty"`
+	EphemeralRun string `protobuf:"bytes,12,opt,name=ephemeral_run,json=ephemeralRun,proto3" json:"ephemeral_run,omitempty"`
 	// The deploy the run started in, empty when none was running then.
 	DeployId string `protobuf:"bytes,13,opt,name=deploy_id,json=deployId,proto3" json:"deploy_id,omitempty"`
 	// The stage that was current when it started, empty when there was none.
@@ -785,9 +797,9 @@ func (x *WorkflowRun) GetNamespaceId() string {
 	return ""
 }
 
-func (x *WorkflowRun) GetDeployEnv() string {
+func (x *WorkflowRun) GetEnv() string {
 	if x != nil {
-		return x.DeployEnv
+		return x.Env
 	}
 	return ""
 }
@@ -834,9 +846,9 @@ func (x *WorkflowRun) GetLastSeen() *timestamppb.Timestamp {
 	return nil
 }
 
-func (x *WorkflowRun) GetEnvInstanceId() string {
+func (x *WorkflowRun) GetEphemeralRun() string {
 	if x != nil {
-		return x.EnvInstanceId
+		return x.EphemeralRun
 	}
 	return ""
 }
@@ -895,12 +907,10 @@ func (x *WorkflowRun) GetConsecutiveRefusals() int32 {
 type ListRunsRequest struct {
 	state        protoimpl.MessageState `protogen:"open.v1"`
 	NamespaceIds []string               `protobuf:"bytes,1,rep,name=namespace_ids,json=namespaceIds,proto3" json:"namespace_ids,omitempty"`
-	DeployEnv    string                 `protobuf:"bytes,2,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
+	Env          string                 `protobuf:"bytes,2,opt,name=env,proto3" json:"env,omitempty"`
 	WorkflowType string                 `protobuf:"bytes,3,opt,name=workflow_type,json=workflowType,proto3" json:"workflow_type,omitempty"`
-	// How many runs one page holds. Zero is 100, and more than 1000 is 1000.
-	PageSize int32 `protobuf:"varint,4,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	// What the previous answer handed back. Empty is the first page.
-	PageToken     string `protobuf:"bytes,5,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,6,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -942,9 +952,9 @@ func (x *ListRunsRequest) GetNamespaceIds() []string {
 	return nil
 }
 
-func (x *ListRunsRequest) GetDeployEnv() string {
+func (x *ListRunsRequest) GetEnv() string {
 	if x != nil {
-		return x.DeployEnv
+		return x.Env
 	}
 	return ""
 }
@@ -956,25 +966,18 @@ func (x *ListRunsRequest) GetWorkflowType() string {
 	return ""
 }
 
-func (x *ListRunsRequest) GetPageSize() int32 {
+func (x *ListRunsRequest) GetPage() *PageRequest {
 	if x != nil {
-		return x.PageSize
+		return x.Page
 	}
-	return 0
-}
-
-func (x *ListRunsRequest) GetPageToken() string {
-	if x != nil {
-		return x.PageToken
-	}
-	return ""
+	return nil
 }
 
 type ListRunsResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Runs  []*WorkflowRun         `protobuf:"bytes,1,rep,name=runs,proto3" json:"runs,omitempty"`
-	// The token for the page after this one, empty on the last page.
-	NextPageToken string `protobuf:"bytes,2,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,3,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1016,11 +1019,11 @@ func (x *ListRunsResponse) GetRuns() []*WorkflowRun {
 	return nil
 }
 
-func (x *ListRunsResponse) GetNextPageToken() string {
+func (x *ListRunsResponse) GetPage() *PageResponse {
 	if x != nil {
-		return x.NextPageToken
+		return x.Page
 	}
-	return ""
+	return nil
 }
 
 // EngineMetric is one Prometheus sample scraped from a server. Kept as a
@@ -1028,7 +1031,7 @@ func (x *ListRunsResponse) GetNextPageToken() string {
 type EngineMetric struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	ServerId  string                 `protobuf:"bytes,1,opt,name=server_id,json=serverId,proto3" json:"server_id,omitempty"`
-	DeployEnv string                 `protobuf:"bytes,2,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
+	Env       string                 `protobuf:"bytes,2,opt,name=env,proto3" json:"env,omitempty"`
 	Name      string                 `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Labels    map[string]string      `protobuf:"bytes,4,rep,name=labels,proto3" json:"labels,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
 	Value     float64                `protobuf:"fixed64,5,opt,name=value,proto3" json:"value,omitempty"`
@@ -1078,9 +1081,9 @@ func (x *EngineMetric) GetServerId() string {
 	return ""
 }
 
-func (x *EngineMetric) GetDeployEnv() string {
+func (x *EngineMetric) GetEnv() string {
 	if x != nil {
-		return x.DeployEnv
+		return x.Env
 	}
 	return ""
 }
@@ -1125,7 +1128,9 @@ type EngineMetricsRequest struct {
 	state     protoimpl.MessageState `protogen:"open.v1"`
 	ServerIds []string               `protobuf:"bytes,1,rep,name=server_ids,json=serverIds,proto3" json:"server_ids,omitempty"`
 	// Prefix match on the metric name. Empty returns everything scraped.
-	NamePrefix    string `protobuf:"bytes,2,opt,name=name_prefix,json=namePrefix,proto3" json:"name_prefix,omitempty"`
+	NamePrefix string `protobuf:"bytes,2,opt,name=name_prefix,json=namePrefix,proto3" json:"name_prefix,omitempty"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,3,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1174,9 +1179,18 @@ func (x *EngineMetricsRequest) GetNamePrefix() string {
 	return ""
 }
 
+func (x *EngineMetricsRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 type EngineMetricsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Metrics       []*EngineMetric        `protobuf:"bytes,1,rep,name=metrics,proto3" json:"metrics,omitempty"`
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	Metrics []*EngineMetric        `protobuf:"bytes,1,rep,name=metrics,proto3" json:"metrics,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1214,6 +1228,13 @@ func (*EngineMetricsResponse) Descriptor() ([]byte, []int) {
 func (x *EngineMetricsResponse) GetMetrics() []*EngineMetric {
 	if x != nil {
 		return x.Metrics
+	}
+	return nil
+}
+
+func (x *EngineMetricsResponse) GetPage() *PageResponse {
+	if x != nil {
+		return x.Page
 	}
 	return nil
 }
@@ -1328,13 +1349,15 @@ func (x *UpdateRejectionsResponse) GetScrapedAt() *timestamppb.Timestamp {
 
 // An empty namespace_ids spans every namespace in the catalog.
 type ActivityStatsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	NamespaceIds  []string               `protobuf:"bytes,1,rep,name=namespace_ids,json=namespaceIds,proto3" json:"namespace_ids,omitempty"`
-	DeployEnv     string                 `protobuf:"bytes,2,opt,name=deploy_env,json=deployEnv,proto3" json:"deploy_env,omitempty"`
-	WorkflowType  string                 `protobuf:"bytes,3,opt,name=workflow_type,json=workflowType,proto3" json:"workflow_type,omitempty"`
-	ActivityType  string                 `protobuf:"bytes,4,opt,name=activity_type,json=activityType,proto3" json:"activity_type,omitempty"`
-	Since         *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=since,proto3" json:"since,omitempty"`
-	Until         *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=until,proto3" json:"until,omitempty"`
+	state        protoimpl.MessageState `protogen:"open.v1"`
+	NamespaceIds []string               `protobuf:"bytes,1,rep,name=namespace_ids,json=namespaceIds,proto3" json:"namespace_ids,omitempty"`
+	Env          string                 `protobuf:"bytes,2,opt,name=env,proto3" json:"env,omitempty"`
+	WorkflowType string                 `protobuf:"bytes,3,opt,name=workflow_type,json=workflowType,proto3" json:"workflow_type,omitempty"`
+	ActivityType string                 `protobuf:"bytes,4,opt,name=activity_type,json=activityType,proto3" json:"activity_type,omitempty"`
+	Since        *timestamppb.Timestamp `protobuf:"bytes,5,opt,name=since,proto3" json:"since,omitempty"`
+	Until        *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=until,proto3" json:"until,omitempty"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,7,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1376,9 +1399,9 @@ func (x *ActivityStatsRequest) GetNamespaceIds() []string {
 	return nil
 }
 
-func (x *ActivityStatsRequest) GetDeployEnv() string {
+func (x *ActivityStatsRequest) GetEnv() string {
 	if x != nil {
-		return x.DeployEnv
+		return x.Env
 	}
 	return ""
 }
@@ -1411,9 +1434,18 @@ func (x *ActivityStatsRequest) GetUntil() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *ActivityStatsRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 type ActivityStatsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Stats         []*ActivityStats       `protobuf:"bytes,1,rep,name=stats,proto3" json:"stats,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	Stats []*ActivityStats       `protobuf:"bytes,1,rep,name=stats,proto3" json:"stats,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1455,13 +1487,20 @@ func (x *ActivityStatsResponse) GetStats() []*ActivityStats {
 	return nil
 }
 
+func (x *ActivityStatsResponse) GetPage() *PageResponse {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 var File_flowrensic_v1_activity_metrics_proto protoreflect.FileDescriptor
 
 const file_flowrensic_v1_activity_metrics_proto_rawDesc = "" +
 	"\n" +
-	"$flowrensic/v1/activity_metrics.proto\x12\rflowrensic.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xb3\x06\n" +
-	"\x0fActivityAttempt\x12!\n" +
-	"\fnamespace_id\x18\x01 \x01(\tR\vnamespaceId\x12#\n" +
+	"$flowrensic/v1/activity_metrics.proto\x12\rflowrensic.v1\x1a\x18flowrensic/v1/page.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xbf\x06\n" +
+	"\x0fActivityAttempt\x12\x1c\n" +
+	"\tnamespace\x18\x15 \x01(\tR\tnamespace\x12#\n" +
 	"\rworkflow_type\x18\x02 \x01(\tR\fworkflowType\x122\n" +
 	"\x15workflow_execution_id\x18\x03 \x01(\tR\x13workflowExecutionId\x12\x17\n" +
 	"\arun_key\x18\x04 \x01(\tR\x06runKey\x12#\n" +
@@ -1480,17 +1519,16 @@ const file_flowrensic_v1_activity_metrics_proto_rawDesc = "" +
 	"\bended_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\aendedAt\x12\x1f\n" +
 	"\vduration_ms\x18\r \x01(\x03R\n" +
 	"durationMs\x12\x10\n" +
-	"\x03env\x18\x0e \x01(\tR\x03env\x12&\n" +
-	"\x0fenv_instance_id\x18\x0f \x01(\tR\renvInstanceId\x12\x18\n" +
+	"\x03env\x18\x0e \x01(\tR\x03env\x12#\n" +
+	"\rephemeral_run\x18\x0f \x01(\tR\fephemeralRun\x12\x18\n" +
 	"\aversion\x18\x10 \x01(\tR\aversion\x128\n" +
 	"\x19start_to_close_timeout_ms\x18\x11 \x01(\x03R\x15startToCloseTimeoutMs\x12)\n" +
 	"\x10maximum_attempts\x18\x12 \x01(\x05R\x0fmaximumAttempts\x120\n" +
 	"\x14heartbeat_timeout_ms\x18\x13 \x01(\x03R\x12heartbeatTimeoutMs\x12=\n" +
-	"\fscheduled_at\x18\x14 \x01(\v2\x1a.google.protobuf.TimestampR\vscheduledAt\"\xa3\x06\n" +
+	"\fscheduled_at\x18\x14 \x01(\v2\x1a.google.protobuf.TimestampR\vscheduledAtJ\x04\b\x01\x10\x02R\fnamespace_id\"\x96\x06\n" +
 	"\rActivityStats\x12!\n" +
-	"\fnamespace_id\x18\x01 \x01(\tR\vnamespaceId\x12\x1d\n" +
-	"\n" +
-	"deploy_env\x18\x02 \x01(\tR\tdeployEnv\x12#\n" +
+	"\fnamespace_id\x18\x01 \x01(\tR\vnamespaceId\x12\x10\n" +
+	"\x03env\x18\x02 \x01(\tR\x03env\x12#\n" +
 	"\rworkflow_type\x18\x03 \x01(\tR\fworkflowType\x12#\n" +
 	"\ractivity_type\x18\x04 \x01(\tR\factivityType\x128\n" +
 	"\x19start_to_close_timeout_ms\x18\x13 \x01(\x03R\x15startToCloseTimeoutMs\x12)\n" +
@@ -1516,28 +1554,29 @@ const file_flowrensic_v1_activity_metrics_proto_rawDesc = "" +
 	"\tlast_seen\x18\x12 \x01(\v2\x1a.google.protobuf.TimestampR\blastSeen\x1a=\n" +
 	"\x0fErrorTypesEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\"\xe8\x01\n" +
+	"\x05value\x18\x02 \x01(\x05R\x05value:\x028\x01\"\x89\x02\n" +
 	"\x1bIngestActivityEventsRequest\x126\n" +
 	"\x06events\x18\x01 \x03(\v2\x1e.flowrensic.v1.ActivityAttemptR\x06events\x12\x1b\n" +
 	"\tworker_id\x18\x02 \x01(\tR\bworkerId\x12;\n" +
 	"\areports\x18\x03 \x03(\v2!.flowrensic.v1.WorkerBufferReportR\areports\x12\x16\n" +
 	"\x06sender\x18\x04 \x01(\tR\x06sender\x12\x1f\n" +
 	"\vsend_number\x18\x05 \x01(\x03R\n" +
-	"sendNumber\"\xa0\x01\n" +
+	"sendNumber\x12\x1f\n" +
+	"\vworker_name\x18\x06 \x01(\tR\n" +
+	"workerName\"\xa0\x01\n" +
 	"\x12WorkerBufferReport\x12\x10\n" +
 	"\x03env\x18\x01 \x01(\tR\x03env\x12'\n" +
 	"\x0frecords_dropped\x18\x02 \x01(\x03R\x0erecordsDropped\x12&\n" +
 	"\x0fsends_timed_out\x18\x03 \x01(\x03R\rsendsTimedOut\x12'\n" +
 	"\x0frecords_waiting\x18\x04 \x01(\x03R\x0erecordsWaiting\":\n" +
 	"\x1cIngestActivityEventsResponse\x12\x1a\n" +
-	"\baccepted\x18\x01 \x01(\x05R\baccepted\"\xd3\x05\n" +
+	"\baccepted\x18\x01 \x01(\x05R\baccepted\"\xc3\x05\n" +
 	"\vWorkflowRun\x122\n" +
 	"\x15workflow_execution_id\x18\x01 \x01(\tR\x13workflowExecutionId\x12\x17\n" +
 	"\arun_key\x18\x02 \x01(\tR\x06runKey\x12#\n" +
 	"\rworkflow_type\x18\x03 \x01(\tR\fworkflowType\x12!\n" +
-	"\fnamespace_id\x18\x04 \x01(\tR\vnamespaceId\x12\x1d\n" +
-	"\n" +
-	"deploy_env\x18\x05 \x01(\tR\tdeployEnv\x12\x1e\n" +
+	"\fnamespace_id\x18\x04 \x01(\tR\vnamespaceId\x12\x10\n" +
+	"\x03env\x18\x05 \x01(\tR\x03env\x12\x1e\n" +
 	"\n" +
 	"activities\x18\x06 \x01(\x05R\n" +
 	"activities\x12\x1a\n" +
@@ -1547,30 +1586,27 @@ const file_flowrensic_v1_activity_metrics_proto_rawDesc = "" +
 	"\n" +
 	"started_at\x18\n" +
 	" \x01(\v2\x1a.google.protobuf.TimestampR\tstartedAt\x127\n" +
-	"\tlast_seen\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\blastSeen\x12&\n" +
-	"\x0fenv_instance_id\x18\f \x01(\tR\renvInstanceId\x12\x1b\n" +
+	"\tlast_seen\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\blastSeen\x12#\n" +
+	"\rephemeral_run\x18\f \x01(\tR\fephemeralRun\x12\x1b\n" +
 	"\tdeploy_id\x18\r \x01(\tR\bdeployId\x12!\n" +
 	"\fdeploy_stage\x18\x0e \x01(\tR\vdeployStage\x12\x18\n" +
 	"\aversion\x18\x0f \x01(\tR\aversion\x12%\n" +
 	"\x0ehistory_length\x18\x10 \x01(\x05R\rhistoryLength\x12)\n" +
 	"\x10updates_accepted\x18\x11 \x01(\x05R\x0fupdatesAccepted\x12'\n" +
 	"\x0fupdates_refused\x18\x12 \x01(\x05R\x0eupdatesRefused\x121\n" +
-	"\x14consecutive_refusals\x18\x13 \x01(\x05R\x13consecutiveRefusals\"\xb6\x01\n" +
+	"\x14consecutive_refusals\x18\x13 \x01(\x05R\x13consecutiveRefusals\"\xc0\x01\n" +
 	"\x0fListRunsRequest\x12#\n" +
-	"\rnamespace_ids\x18\x01 \x03(\tR\fnamespaceIds\x12\x1d\n" +
-	"\n" +
-	"deploy_env\x18\x02 \x01(\tR\tdeployEnv\x12#\n" +
-	"\rworkflow_type\x18\x03 \x01(\tR\fworkflowType\x12\x1b\n" +
-	"\tpage_size\x18\x04 \x01(\x05R\bpageSize\x12\x1d\n" +
-	"\n" +
-	"page_token\x18\x05 \x01(\tR\tpageToken\"j\n" +
+	"\rnamespace_ids\x18\x01 \x03(\tR\fnamespaceIds\x12\x10\n" +
+	"\x03env\x18\x02 \x01(\tR\x03env\x12#\n" +
+	"\rworkflow_type\x18\x03 \x01(\tR\fworkflowType\x12.\n" +
+	"\x04page\x18\x06 \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04pageJ\x04\b\x04\x10\x05J\x04\b\x05\x10\x06R\tpage_sizeR\n" +
+	"page_token\"\x8a\x01\n" +
 	"\x10ListRunsResponse\x12.\n" +
-	"\x04runs\x18\x01 \x03(\v2\x1a.flowrensic.v1.WorkflowRunR\x04runs\x12&\n" +
-	"\x0fnext_page_token\x18\x02 \x01(\tR\rnextPageToken\"\xcc\x02\n" +
+	"\x04runs\x18\x01 \x03(\v2\x1a.flowrensic.v1.WorkflowRunR\x04runs\x12/\n" +
+	"\x04page\x18\x03 \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04pageJ\x04\b\x02\x10\x03R\x0fnext_page_token\"\xbf\x02\n" +
 	"\fEngineMetric\x12\x1b\n" +
-	"\tserver_id\x18\x01 \x01(\tR\bserverId\x12\x1d\n" +
-	"\n" +
-	"deploy_env\x18\x02 \x01(\tR\tdeployEnv\x12\x12\n" +
+	"\tserver_id\x18\x01 \x01(\tR\bserverId\x12\x10\n" +
+	"\x03env\x18\x02 \x01(\tR\x03env\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12?\n" +
 	"\x06labels\x18\x04 \x03(\v2'.flowrensic.v1.EngineMetric.LabelsEntryR\x06labels\x12\x14\n" +
 	"\x05value\x18\x05 \x01(\x01R\x05value\x129\n" +
@@ -1580,14 +1616,16 @@ const file_flowrensic_v1_activity_metrics_proto_rawDesc = "" +
 	"metricType\x1a9\n" +
 	"\vLabelsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"V\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\x86\x01\n" +
 	"\x14EngineMetricsRequest\x12\x1d\n" +
 	"\n" +
 	"server_ids\x18\x01 \x03(\tR\tserverIds\x12\x1f\n" +
 	"\vname_prefix\x18\x02 \x01(\tR\n" +
-	"namePrefix\"N\n" +
+	"namePrefix\x12.\n" +
+	"\x04page\x18\x03 \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04page\"\x7f\n" +
 	"\x15EngineMetricsResponse\x125\n" +
-	"\ametrics\x18\x01 \x03(\v2\x1b.flowrensic.v1.EngineMetricR\ametrics\"<\n" +
+	"\ametrics\x18\x01 \x03(\v2\x1b.flowrensic.v1.EngineMetricR\ametrics\x12/\n" +
+	"\x04page\x18\x02 \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04page\"<\n" +
 	"\x17UpdateRejectionsRequest\x12!\n" +
 	"\fnamespace_id\x18\x01 \x01(\tR\vnamespaceId\"\x98\x01\n" +
 	"\x18UpdateRejectionsResponse\x12!\n" +
@@ -1596,17 +1634,18 @@ const file_flowrensic_v1_activity_metrics_proto_rawDesc = "" +
 	"rejections\x18\x02 \x01(\x01R\n" +
 	"rejections\x129\n" +
 	"\n" +
-	"scraped_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tscrapedAt\"\x88\x02\n" +
+	"scraped_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tscrapedAt\"\xab\x02\n" +
 	"\x14ActivityStatsRequest\x12#\n" +
-	"\rnamespace_ids\x18\x01 \x03(\tR\fnamespaceIds\x12\x1d\n" +
-	"\n" +
-	"deploy_env\x18\x02 \x01(\tR\tdeployEnv\x12#\n" +
+	"\rnamespace_ids\x18\x01 \x03(\tR\fnamespaceIds\x12\x10\n" +
+	"\x03env\x18\x02 \x01(\tR\x03env\x12#\n" +
 	"\rworkflow_type\x18\x03 \x01(\tR\fworkflowType\x12#\n" +
 	"\ractivity_type\x18\x04 \x01(\tR\factivityType\x120\n" +
 	"\x05since\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\x05since\x120\n" +
-	"\x05until\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\x05until\"K\n" +
+	"\x05until\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\x05until\x12.\n" +
+	"\x04page\x18\a \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04page\"|\n" +
 	"\x15ActivityStatsResponse\x122\n" +
-	"\x05stats\x18\x01 \x03(\v2\x1c.flowrensic.v1.ActivityStatsR\x05stats*z\n" +
+	"\x05stats\x18\x01 \x03(\v2\x1c.flowrensic.v1.ActivityStatsR\x05stats\x12/\n" +
+	"\x04page\x18\x02 \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04page*z\n" +
 	"\aOutcome\x12\x17\n" +
 	"\x13OUTCOME_UNSPECIFIED\x10\x00\x12\x15\n" +
 	"\x11OUTCOME_COMPLETED\x10\x01\x12\x12\n" +
@@ -1649,6 +1688,8 @@ var file_flowrensic_v1_activity_metrics_proto_goTypes = []any{
 	nil,                                  // 16: flowrensic.v1.ActivityStats.ErrorTypesEntry
 	nil,                                  // 17: flowrensic.v1.EngineMetric.LabelsEntry
 	(*timestamppb.Timestamp)(nil),        // 18: google.protobuf.Timestamp
+	(*PageRequest)(nil),                  // 19: flowrensic.v1.PageRequest
+	(*PageResponse)(nil),                 // 20: flowrensic.v1.PageResponse
 }
 var file_flowrensic_v1_activity_metrics_proto_depIdxs = []int32{
 	0,  // 0: flowrensic.v1.ActivityAttempt.outcome:type_name -> flowrensic.v1.Outcome
@@ -1662,19 +1703,25 @@ var file_flowrensic_v1_activity_metrics_proto_depIdxs = []int32{
 	4,  // 8: flowrensic.v1.IngestActivityEventsRequest.reports:type_name -> flowrensic.v1.WorkerBufferReport
 	18, // 9: flowrensic.v1.WorkflowRun.started_at:type_name -> google.protobuf.Timestamp
 	18, // 10: flowrensic.v1.WorkflowRun.last_seen:type_name -> google.protobuf.Timestamp
-	6,  // 11: flowrensic.v1.ListRunsResponse.runs:type_name -> flowrensic.v1.WorkflowRun
-	17, // 12: flowrensic.v1.EngineMetric.labels:type_name -> flowrensic.v1.EngineMetric.LabelsEntry
-	18, // 13: flowrensic.v1.EngineMetric.scraped_at:type_name -> google.protobuf.Timestamp
-	9,  // 14: flowrensic.v1.EngineMetricsResponse.metrics:type_name -> flowrensic.v1.EngineMetric
-	18, // 15: flowrensic.v1.UpdateRejectionsResponse.scraped_at:type_name -> google.protobuf.Timestamp
-	18, // 16: flowrensic.v1.ActivityStatsRequest.since:type_name -> google.protobuf.Timestamp
-	18, // 17: flowrensic.v1.ActivityStatsRequest.until:type_name -> google.protobuf.Timestamp
-	2,  // 18: flowrensic.v1.ActivityStatsResponse.stats:type_name -> flowrensic.v1.ActivityStats
-	19, // [19:19] is the sub-list for method output_type
-	19, // [19:19] is the sub-list for method input_type
-	19, // [19:19] is the sub-list for extension type_name
-	19, // [19:19] is the sub-list for extension extendee
-	0,  // [0:19] is the sub-list for field type_name
+	19, // 11: flowrensic.v1.ListRunsRequest.page:type_name -> flowrensic.v1.PageRequest
+	6,  // 12: flowrensic.v1.ListRunsResponse.runs:type_name -> flowrensic.v1.WorkflowRun
+	20, // 13: flowrensic.v1.ListRunsResponse.page:type_name -> flowrensic.v1.PageResponse
+	17, // 14: flowrensic.v1.EngineMetric.labels:type_name -> flowrensic.v1.EngineMetric.LabelsEntry
+	18, // 15: flowrensic.v1.EngineMetric.scraped_at:type_name -> google.protobuf.Timestamp
+	19, // 16: flowrensic.v1.EngineMetricsRequest.page:type_name -> flowrensic.v1.PageRequest
+	9,  // 17: flowrensic.v1.EngineMetricsResponse.metrics:type_name -> flowrensic.v1.EngineMetric
+	20, // 18: flowrensic.v1.EngineMetricsResponse.page:type_name -> flowrensic.v1.PageResponse
+	18, // 19: flowrensic.v1.UpdateRejectionsResponse.scraped_at:type_name -> google.protobuf.Timestamp
+	18, // 20: flowrensic.v1.ActivityStatsRequest.since:type_name -> google.protobuf.Timestamp
+	18, // 21: flowrensic.v1.ActivityStatsRequest.until:type_name -> google.protobuf.Timestamp
+	19, // 22: flowrensic.v1.ActivityStatsRequest.page:type_name -> flowrensic.v1.PageRequest
+	2,  // 23: flowrensic.v1.ActivityStatsResponse.stats:type_name -> flowrensic.v1.ActivityStats
+	20, // 24: flowrensic.v1.ActivityStatsResponse.page:type_name -> flowrensic.v1.PageResponse
+	25, // [25:25] is the sub-list for method output_type
+	25, // [25:25] is the sub-list for method input_type
+	25, // [25:25] is the sub-list for extension type_name
+	25, // [25:25] is the sub-list for extension extendee
+	0,  // [0:25] is the sub-list for field type_name
 }
 
 func init() { file_flowrensic_v1_activity_metrics_proto_init() }
@@ -1682,6 +1729,7 @@ func file_flowrensic_v1_activity_metrics_proto_init() {
 	if File_flowrensic_v1_activity_metrics_proto != nil {
 		return
 	}
+	file_flowrensic_v1_page_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

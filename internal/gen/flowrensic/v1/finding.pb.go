@@ -44,10 +44,8 @@ const (
 	FindingClass_FINDING_CLASS_REFUSED_UPDATES                 FindingClass = 14
 	FindingClass_FINDING_CLASS_PULL_GAP                        FindingClass = 15
 	FindingClass_FINDING_CLASS_STOPPED_AFTER_DEPLOY            FindingClass = 16
-	FindingClass_FINDING_CLASS_DEPLOYED_WITHOUT_REPLAY         FindingClass = 17
 	FindingClass_FINDING_CLASS_FAILED_RUN                      FindingClass = 18
 	FindingClass_FINDING_CLASS_SERVER_METRICS_GAP              FindingClass = 19
-	FindingClass_FINDING_CLASS_DEPLOY_REPLAY_FAILED            FindingClass = 20
 	FindingClass_FINDING_CLASS_WORKER_SLOTS_USED_UP            FindingClass = 21
 	FindingClass_FINDING_CLASS_STICKY_CACHE_TOO_SMALL          FindingClass = 22
 	FindingClass_FINDING_CLASS_SLOW_WORKFLOW_TASK              FindingClass = 23
@@ -85,7 +83,6 @@ const (
 	FindingClass_FINDING_CLASS_WORKER_CALLS_REFUSED  FindingClass = 54
 	FindingClass_FINDING_CLASS_NAMESPACE_NOT_FOUND   FindingClass = 55
 	FindingClass_FINDING_CLASS_ENV_WITHOUT_NAMESPACE FindingClass = 56
-	FindingClass_FINDING_CLASS_UNKNOWN_NAMESPACE_ID  FindingClass = 57
 	// The e2e test findings of FPP-105-R10 and FPP-105-R11.
 	FindingClass_FINDING_CLASS_E2E_WITH_OLD_WORKERS FindingClass = 58
 	FindingClass_FINDING_CLASS_E2E_ATTEMPTS_LOST    FindingClass = 59
@@ -127,10 +124,8 @@ var (
 		14: "FINDING_CLASS_REFUSED_UPDATES",
 		15: "FINDING_CLASS_PULL_GAP",
 		16: "FINDING_CLASS_STOPPED_AFTER_DEPLOY",
-		17: "FINDING_CLASS_DEPLOYED_WITHOUT_REPLAY",
 		18: "FINDING_CLASS_FAILED_RUN",
 		19: "FINDING_CLASS_SERVER_METRICS_GAP",
-		20: "FINDING_CLASS_DEPLOY_REPLAY_FAILED",
 		21: "FINDING_CLASS_WORKER_SLOTS_USED_UP",
 		22: "FINDING_CLASS_STICKY_CACHE_TOO_SMALL",
 		23: "FINDING_CLASS_SLOW_WORKFLOW_TASK",
@@ -167,7 +162,6 @@ var (
 		54: "FINDING_CLASS_WORKER_CALLS_REFUSED",
 		55: "FINDING_CLASS_NAMESPACE_NOT_FOUND",
 		56: "FINDING_CLASS_ENV_WITHOUT_NAMESPACE",
-		57: "FINDING_CLASS_UNKNOWN_NAMESPACE_ID",
 		58: "FINDING_CLASS_E2E_WITH_OLD_WORKERS",
 		59: "FINDING_CLASS_E2E_ATTEMPTS_LOST",
 		60: "FINDING_CLASS_FORGOTTEN",
@@ -196,10 +190,8 @@ var (
 		"FINDING_CLASS_REFUSED_UPDATES":                 14,
 		"FINDING_CLASS_PULL_GAP":                        15,
 		"FINDING_CLASS_STOPPED_AFTER_DEPLOY":            16,
-		"FINDING_CLASS_DEPLOYED_WITHOUT_REPLAY":         17,
 		"FINDING_CLASS_FAILED_RUN":                      18,
 		"FINDING_CLASS_SERVER_METRICS_GAP":              19,
-		"FINDING_CLASS_DEPLOY_REPLAY_FAILED":            20,
 		"FINDING_CLASS_WORKER_SLOTS_USED_UP":            21,
 		"FINDING_CLASS_STICKY_CACHE_TOO_SMALL":          22,
 		"FINDING_CLASS_SLOW_WORKFLOW_TASK":              23,
@@ -236,7 +228,6 @@ var (
 		"FINDING_CLASS_WORKER_CALLS_REFUSED":            54,
 		"FINDING_CLASS_NAMESPACE_NOT_FOUND":             55,
 		"FINDING_CLASS_ENV_WITHOUT_NAMESPACE":           56,
-		"FINDING_CLASS_UNKNOWN_NAMESPACE_ID":            57,
 		"FINDING_CLASS_E2E_WITH_OLD_WORKERS":            58,
 		"FINDING_CLASS_E2E_ATTEMPTS_LOST":               59,
 		"FINDING_CLASS_FORGOTTEN":                       60,
@@ -764,11 +755,6 @@ type ListFindingsRequest struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	RunId    string                 `protobuf:"bytes,1,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
 	DeployId string                 `protobuf:"bytes,2,opt,name=deploy_id,json=deployId,proto3" json:"deploy_id,omitempty"`
-	// How many findings one page of the whole list holds. Zero takes the number
-	// the server was started with. Read only when neither key is given.
-	PageSize int32 `protobuf:"varint,3,opt,name=page_size,json=pageSize,proto3" json:"page_size,omitempty"`
-	// What the previous answer handed back. Empty is the first page.
-	PageToken string `protobuf:"bytes,4,opt,name=page_token,json=pageToken,proto3" json:"page_token,omitempty"`
 	// Each of the four below keeps only the findings that match it, and is not
 	// used when left empty. Read only when neither key is given.
 	Severity Severity     `protobuf:"varint,5,opt,name=severity,proto3,enum=flowrensic.v1.Severity" json:"severity,omitempty"`
@@ -796,7 +782,13 @@ type ListFindingsRequest struct {
 	Mistaken bool `protobuf:"varint,13,opt,name=mistaken,proto3" json:"mistaken,omitempty"`
 	// Keeps only the findings of this tag, and is not used when left empty.
 	// Read only when neither key is given.
-	Tag           FindingTag `protobuf:"varint,14,opt,name=tag,proto3,enum=flowrensic.v1.FindingTag" json:"tag,omitempty"`
+	Tag FindingTag `protobuf:"varint,14,opt,name=tag,proto3,enum=flowrensic.v1.FindingTag" json:"tag,omitempty"`
+	// Keeps only the findings of the workflow types that worker runs, matched
+	// as written, and is not used when left empty. Read only when neither key
+	// is given.
+	WorkerName string `protobuf:"bytes,15,opt,name=worker_name,json=workerName,proto3" json:"worker_name,omitempty"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,16,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -841,20 +833,6 @@ func (x *ListFindingsRequest) GetRunId() string {
 func (x *ListFindingsRequest) GetDeployId() string {
 	if x != nil {
 		return x.DeployId
-	}
-	return ""
-}
-
-func (x *ListFindingsRequest) GetPageSize() int32 {
-	if x != nil {
-		return x.PageSize
-	}
-	return 0
-}
-
-func (x *ListFindingsRequest) GetPageToken() string {
-	if x != nil {
-		return x.PageToken
 	}
 	return ""
 }
@@ -929,12 +907,26 @@ func (x *ListFindingsRequest) GetTag() FindingTag {
 	return FindingTag_FINDING_TAG_UNSPECIFIED
 }
 
+func (x *ListFindingsRequest) GetWorkerName() string {
+	if x != nil {
+		return x.WorkerName
+	}
+	return ""
+}
+
+func (x *ListFindingsRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 type ListFindingsResponse struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
 	RunId    string                 `protobuf:"bytes,1,opt,name=run_id,json=runId,proto3" json:"run_id,omitempty"`
 	Findings []*Finding             `protobuf:"bytes,2,rep,name=findings,proto3" json:"findings,omitempty"`
-	// The token for the page after this one, empty on the last page.
-	NextPageToken string `protobuf:"bytes,3,opt,name=next_page_token,json=nextPageToken,proto3" json:"next_page_token,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,4,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -983,11 +975,11 @@ func (x *ListFindingsResponse) GetFindings() []*Finding {
 	return nil
 }
 
-func (x *ListFindingsResponse) GetNextPageToken() string {
+func (x *ListFindingsResponse) GetPage() *PageResponse {
 	if x != nil {
-		return x.NextPageToken
+		return x.Page
 	}
-	return ""
+	return nil
 }
 
 type ListThresholdsRequest struct {
@@ -1144,7 +1136,9 @@ type GetFindingRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Id    string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	// As stored_only of ListFindingsRequest.
-	StoredOnly    bool `protobuf:"varint,2,opt,name=stored_only,json=storedOnly,proto3" json:"stored_only,omitempty"`
+	StoredOnly bool `protobuf:"varint,2,opt,name=stored_only,json=storedOnly,proto3" json:"stored_only,omitempty"`
+	// The page of the runs of a finding of runs asked for, in its evidence.
+	RunsPage      *PageRequest `protobuf:"bytes,3,opt,name=runs_page,json=runsPage,proto3" json:"runs_page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1193,9 +1187,18 @@ func (x *GetFindingRequest) GetStoredOnly() bool {
 	return false
 }
 
+func (x *GetFindingRequest) GetRunsPage() *PageRequest {
+	if x != nil {
+		return x.RunsPage
+	}
+	return nil
+}
+
 type GetFindingResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Finding       *Finding               `protobuf:"bytes,1,opt,name=finding,proto3" json:"finding,omitempty"`
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	Finding *Finding               `protobuf:"bytes,1,opt,name=finding,proto3" json:"finding,omitempty"`
+	// Whether the runs of the finding go on after the ones in its evidence.
+	RunsPage      *PageResponse `protobuf:"bytes,2,opt,name=runs_page,json=runsPage,proto3" json:"runs_page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1233,6 +1236,13 @@ func (*GetFindingResponse) Descriptor() ([]byte, []int) {
 func (x *GetFindingResponse) GetFinding() *Finding {
 	if x != nil {
 		return x.Finding
+	}
+	return nil
+}
+
+func (x *GetFindingResponse) GetRunsPage() *PageResponse {
+	if x != nil {
+		return x.RunsPage
 	}
 	return nil
 }
@@ -1407,7 +1417,9 @@ func (x *Alert) GetFinding() *Finding {
 }
 
 type ListAlertsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,1,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1442,10 +1454,19 @@ func (*ListAlertsRequest) Descriptor() ([]byte, []int) {
 	return file_flowrensic_v1_finding_proto_rawDescGZIP(), []int{12}
 }
 
+func (x *ListAlertsRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 type ListAlertsResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Every current alert, newest first.
-	Alerts        []*Alert `protobuf:"bytes,1,rep,name=alerts,proto3" json:"alerts,omitempty"`
+	Alerts []*Alert `protobuf:"bytes,1,rep,name=alerts,proto3" json:"alerts,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1487,11 +1508,18 @@ func (x *ListAlertsResponse) GetAlerts() []*Alert {
 	return nil
 }
 
+func (x *ListAlertsResponse) GetPage() *PageResponse {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 var File_flowrensic_v1_finding_proto protoreflect.FileDescriptor
 
 const file_flowrensic_v1_finding_proto_rawDesc = "" +
 	"\n" +
-	"\x1bflowrensic/v1/finding.proto\x12\rflowrensic.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc7\x01\n" +
+	"\x1bflowrensic/v1/finding.proto\x12\rflowrensic.v1\x1a\x18flowrensic/v1/page.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc7\x01\n" +
 	"\bEvidence\x12\x1b\n" +
 	"\tevent_seq\x18\x01 \x01(\x03R\beventSeq\x12\x12\n" +
 	"\x04note\x18\x02 \x01(\tR\x04note\x12\x15\n" +
@@ -1534,13 +1562,10 @@ const file_flowrensic_v1_finding_proto_rawDesc = "" +
 	"\fDetailsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01J\x04\b\x17\x10\x18R\n" +
-	"end_reason\"\xf8\x03\n" +
+	"end_reason\"\xb0\x04\n" +
 	"\x13ListFindingsRequest\x12\x15\n" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\x12\x1b\n" +
-	"\tdeploy_id\x18\x02 \x01(\tR\bdeployId\x12\x1b\n" +
-	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\x12\x1d\n" +
-	"\n" +
-	"page_token\x18\x04 \x01(\tR\tpageToken\x123\n" +
+	"\tdeploy_id\x18\x02 \x01(\tR\bdeployId\x123\n" +
 	"\bseverity\x18\x05 \x01(\x0e2\x17.flowrensic.v1.SeverityR\bseverity\x121\n" +
 	"\x05class\x18\x06 \x01(\x0e2\x1b.flowrensic.v1.FindingClassR\x05class\x12\x10\n" +
 	"\x03env\x18\a \x01(\tR\x03env\x12#\n" +
@@ -1554,11 +1579,15 @@ const file_flowrensic_v1_finding_proto_rawDesc = "" +
 	"storedOnly\x124\n" +
 	"\x06status\x18\f \x01(\x0e2\x1c.flowrensic.v1.FindingStatusR\x06status\x12\x1a\n" +
 	"\bmistaken\x18\r \x01(\bR\bmistaken\x12+\n" +
-	"\x03tag\x18\x0e \x01(\x0e2\x19.flowrensic.v1.FindingTagR\x03tag\"\x89\x01\n" +
+	"\x03tag\x18\x0e \x01(\x0e2\x19.flowrensic.v1.FindingTagR\x03tag\x12\x1f\n" +
+	"\vworker_name\x18\x0f \x01(\tR\n" +
+	"workerName\x12.\n" +
+	"\x04page\x18\x10 \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04pageJ\x04\b\x03\x10\x04J\x04\b\x04\x10\x05R\tpage_sizeR\n" +
+	"page_token\"\xa9\x01\n" +
 	"\x14ListFindingsResponse\x12\x15\n" +
 	"\x06run_id\x18\x01 \x01(\tR\x05runId\x122\n" +
-	"\bfindings\x18\x02 \x03(\v2\x16.flowrensic.v1.FindingR\bfindings\x12&\n" +
-	"\x0fnext_page_token\x18\x03 \x01(\tR\rnextPageToken\"\x17\n" +
+	"\bfindings\x18\x02 \x03(\v2\x16.flowrensic.v1.FindingR\bfindings\x12/\n" +
+	"\x04page\x18\x04 \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04pageJ\x04\b\x03\x10\x04R\x0fnext_page_token\"\x17\n" +
 	"\x15ListThresholdsRequest\"\xa0\x01\n" +
 	"\tThreshold\x12!\n" +
 	"\fenv_variable\x18\x01 \x01(\tR\venvVariable\x125\n" +
@@ -1568,13 +1597,15 @@ const file_flowrensic_v1_finding_proto_rawDesc = "" +
 	"\x16ListThresholdsResponse\x128\n" +
 	"\n" +
 	"thresholds\x18\x01 \x03(\v2\x18.flowrensic.v1.ThresholdR\n" +
-	"thresholds\"D\n" +
+	"thresholds\"}\n" +
 	"\x11GetFindingRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1f\n" +
 	"\vstored_only\x18\x02 \x01(\bR\n" +
-	"storedOnly\"F\n" +
+	"storedOnly\x127\n" +
+	"\truns_page\x18\x03 \x01(\v2\x1a.flowrensic.v1.PageRequestR\brunsPage\"\x80\x01\n" +
 	"\x12GetFindingResponse\x120\n" +
-	"\afinding\x18\x01 \x01(\v2\x16.flowrensic.v1.FindingR\afinding\"_\n" +
+	"\afinding\x18\x01 \x01(\v2\x16.flowrensic.v1.FindingR\afinding\x128\n" +
+	"\truns_page\x18\x02 \x01(\v2\x1b.flowrensic.v1.PageResponseR\brunsPage\"_\n" +
 	"\x17SetFindingStatusRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x124\n" +
 	"\x06status\x18\x02 \x01(\x0e2\x1c.flowrensic.v1.FindingStatusR\x06status\"L\n" +
@@ -1584,10 +1615,12 @@ const file_flowrensic_v1_finding_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04rule\x18\x02 \x01(\tR\x04rule\x127\n" +
 	"\traised_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\braisedAt\x120\n" +
-	"\afinding\x18\x04 \x01(\v2\x16.flowrensic.v1.FindingR\afinding\"\x13\n" +
-	"\x11ListAlertsRequest\"B\n" +
+	"\afinding\x18\x04 \x01(\v2\x16.flowrensic.v1.FindingR\afinding\"C\n" +
+	"\x11ListAlertsRequest\x12.\n" +
+	"\x04page\x18\x01 \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04page\"s\n" +
 	"\x12ListAlertsResponse\x12,\n" +
-	"\x06alerts\x18\x01 \x03(\v2\x14.flowrensic.v1.AlertR\x06alerts*\x88\x14\n" +
+	"\x06alerts\x18\x01 \x03(\v2\x14.flowrensic.v1.AlertR\x06alerts\x12/\n" +
+	"\x04page\x18\x02 \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04page*\x8e\x14\n" +
 	"\fFindingClass\x12\x1d\n" +
 	"\x19FINDING_CLASS_UNSPECIFIED\x10\x00\x12\x18\n" +
 	"\x14FINDING_CLASS_WEDGED\x10\x01\x12\"\n" +
@@ -1606,11 +1639,9 @@ const file_flowrensic_v1_finding_proto_rawDesc = "" +
 	"$FINDING_CLASS_RETRY_MISCONFIGURATION\x10\r\x12!\n" +
 	"\x1dFINDING_CLASS_REFUSED_UPDATES\x10\x0e\x12\x1a\n" +
 	"\x16FINDING_CLASS_PULL_GAP\x10\x0f\x12&\n" +
-	"\"FINDING_CLASS_STOPPED_AFTER_DEPLOY\x10\x10\x12)\n" +
-	"%FINDING_CLASS_DEPLOYED_WITHOUT_REPLAY\x10\x11\x12\x1c\n" +
+	"\"FINDING_CLASS_STOPPED_AFTER_DEPLOY\x10\x10\x12\x1c\n" +
 	"\x18FINDING_CLASS_FAILED_RUN\x10\x12\x12$\n" +
 	" FINDING_CLASS_SERVER_METRICS_GAP\x10\x13\x12&\n" +
-	"\"FINDING_CLASS_DEPLOY_REPLAY_FAILED\x10\x14\x12&\n" +
 	"\"FINDING_CLASS_WORKER_SLOTS_USED_UP\x10\x15\x12(\n" +
 	"$FINDING_CLASS_STICKY_CACHE_TOO_SMALL\x10\x16\x12$\n" +
 	" FINDING_CLASS_SLOW_WORKFLOW_TASK\x10\x17\x12\x1d\n" +
@@ -1647,7 +1678,6 @@ const file_flowrensic_v1_finding_proto_rawDesc = "" +
 	"\"FINDING_CLASS_WORKER_CALLS_REFUSED\x106\x12%\n" +
 	"!FINDING_CLASS_NAMESPACE_NOT_FOUND\x107\x12'\n" +
 	"#FINDING_CLASS_ENV_WITHOUT_NAMESPACE\x108\x12&\n" +
-	"\"FINDING_CLASS_UNKNOWN_NAMESPACE_ID\x109\x12&\n" +
 	"\"FINDING_CLASS_E2E_WITH_OLD_WORKERS\x10:\x12#\n" +
 	"\x1fFINDING_CLASS_E2E_ATTEMPTS_LOST\x10;\x12\x1b\n" +
 	"\x17FINDING_CLASS_FORGOTTEN\x10<\x12*\n" +
@@ -1656,7 +1686,7 @@ const file_flowrensic_v1_finding_proto_rawDesc = "" +
 	"\x18FINDING_CLASS_JOB_BEHIND\x10?\x12\x1a\n" +
 	"\x16FINDING_CLASS_JOB_LATE\x10@\x12\x1c\n" +
 	"\x18FINDING_CLASS_OVER_LIMIT\x10B\x12%\n" +
-	"!FINDING_CLASS_JOB_BACKLOG_GROWING\x10C\"\x04\bA\x10A* FINDING_CLASS_SIZE_LIMIT_STOPPED*`\n" +
+	"!FINDING_CLASS_JOB_BACKLOG_GROWING\x10C\"\x04\b\x11\x10\x11\"\x04\b\x14\x10\x14\"\x04\b9\x109\"\x04\bA\x10A*%FINDING_CLASS_DEPLOYED_WITHOUT_REPLAY*\"FINDING_CLASS_DEPLOY_REPLAY_FAILED*\"FINDING_CLASS_UNKNOWN_NAMESPACE_ID* FINDING_CLASS_SIZE_LIMIT_STOPPED*`\n" +
 	"\n" +
 	"FindingTag\x12\x1b\n" +
 	"\x17FINDING_TAG_UNSPECIFIED\x10\x00\x12\x19\n" +
@@ -1708,6 +1738,8 @@ var file_flowrensic_v1_finding_proto_goTypes = []any{
 	(*ListAlertsResponse)(nil),       // 17: flowrensic.v1.ListAlertsResponse
 	nil,                              // 18: flowrensic.v1.Finding.DetailsEntry
 	(*timestamppb.Timestamp)(nil),    // 19: google.protobuf.Timestamp
+	(*PageRequest)(nil),              // 20: flowrensic.v1.PageRequest
+	(*PageResponse)(nil),             // 21: flowrensic.v1.PageResponse
 }
 var file_flowrensic_v1_finding_proto_depIdxs = []int32{
 	19, // 0: flowrensic.v1.Evidence.at:type_name -> google.protobuf.Timestamp
@@ -1727,20 +1759,26 @@ var file_flowrensic_v1_finding_proto_depIdxs = []int32{
 	0,  // 14: flowrensic.v1.ListFindingsRequest.class:type_name -> flowrensic.v1.FindingClass
 	3,  // 15: flowrensic.v1.ListFindingsRequest.status:type_name -> flowrensic.v1.FindingStatus
 	1,  // 16: flowrensic.v1.ListFindingsRequest.tag:type_name -> flowrensic.v1.FindingTag
-	5,  // 17: flowrensic.v1.ListFindingsResponse.findings:type_name -> flowrensic.v1.Finding
-	0,  // 18: flowrensic.v1.Threshold.classes:type_name -> flowrensic.v1.FindingClass
-	9,  // 19: flowrensic.v1.ListThresholdsResponse.thresholds:type_name -> flowrensic.v1.Threshold
-	5,  // 20: flowrensic.v1.GetFindingResponse.finding:type_name -> flowrensic.v1.Finding
-	3,  // 21: flowrensic.v1.SetFindingStatusRequest.status:type_name -> flowrensic.v1.FindingStatus
-	5,  // 22: flowrensic.v1.SetFindingStatusResponse.finding:type_name -> flowrensic.v1.Finding
-	19, // 23: flowrensic.v1.Alert.raised_at:type_name -> google.protobuf.Timestamp
-	5,  // 24: flowrensic.v1.Alert.finding:type_name -> flowrensic.v1.Finding
-	15, // 25: flowrensic.v1.ListAlertsResponse.alerts:type_name -> flowrensic.v1.Alert
-	26, // [26:26] is the sub-list for method output_type
-	26, // [26:26] is the sub-list for method input_type
-	26, // [26:26] is the sub-list for extension type_name
-	26, // [26:26] is the sub-list for extension extendee
-	0,  // [0:26] is the sub-list for field type_name
+	20, // 17: flowrensic.v1.ListFindingsRequest.page:type_name -> flowrensic.v1.PageRequest
+	5,  // 18: flowrensic.v1.ListFindingsResponse.findings:type_name -> flowrensic.v1.Finding
+	21, // 19: flowrensic.v1.ListFindingsResponse.page:type_name -> flowrensic.v1.PageResponse
+	0,  // 20: flowrensic.v1.Threshold.classes:type_name -> flowrensic.v1.FindingClass
+	9,  // 21: flowrensic.v1.ListThresholdsResponse.thresholds:type_name -> flowrensic.v1.Threshold
+	20, // 22: flowrensic.v1.GetFindingRequest.runs_page:type_name -> flowrensic.v1.PageRequest
+	5,  // 23: flowrensic.v1.GetFindingResponse.finding:type_name -> flowrensic.v1.Finding
+	21, // 24: flowrensic.v1.GetFindingResponse.runs_page:type_name -> flowrensic.v1.PageResponse
+	3,  // 25: flowrensic.v1.SetFindingStatusRequest.status:type_name -> flowrensic.v1.FindingStatus
+	5,  // 26: flowrensic.v1.SetFindingStatusResponse.finding:type_name -> flowrensic.v1.Finding
+	19, // 27: flowrensic.v1.Alert.raised_at:type_name -> google.protobuf.Timestamp
+	5,  // 28: flowrensic.v1.Alert.finding:type_name -> flowrensic.v1.Finding
+	20, // 29: flowrensic.v1.ListAlertsRequest.page:type_name -> flowrensic.v1.PageRequest
+	15, // 30: flowrensic.v1.ListAlertsResponse.alerts:type_name -> flowrensic.v1.Alert
+	21, // 31: flowrensic.v1.ListAlertsResponse.page:type_name -> flowrensic.v1.PageResponse
+	32, // [32:32] is the sub-list for method output_type
+	32, // [32:32] is the sub-list for method input_type
+	32, // [32:32] is the sub-list for extension type_name
+	32, // [32:32] is the sub-list for extension extendee
+	0,  // [0:32] is the sub-list for field type_name
 }
 
 func init() { file_flowrensic_v1_finding_proto_init() }
@@ -1748,6 +1786,7 @@ func file_flowrensic_v1_finding_proto_init() {
 	if File_flowrensic_v1_finding_proto != nil {
 		return
 	}
+	file_flowrensic_v1_page_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

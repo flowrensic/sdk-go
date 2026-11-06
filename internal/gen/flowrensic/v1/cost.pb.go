@@ -435,7 +435,9 @@ func (x *CostEventTypeRow) GetPrevious() int64 {
 type CostBreakdownRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Required. The breakdown spans one namespace.
-	NamespaceId   string `protobuf:"bytes,1,opt,name=namespace_id,json=namespaceId,proto3" json:"namespace_id,omitempty"`
+	NamespaceId string `protobuf:"bytes,1,opt,name=namespace_id,json=namespaceId,proto3" json:"namespace_id,omitempty"`
+	// The page of the list asked for.
+	Page          *PageRequest `protobuf:"bytes,2,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -477,6 +479,13 @@ func (x *CostBreakdownRequest) GetNamespaceId() string {
 	return ""
 }
 
+func (x *CostBreakdownRequest) GetPage() *PageRequest {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 // The rows come in no order.
 type CostBreakdownResponse struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
@@ -488,7 +497,9 @@ type CostBreakdownResponse struct {
 	ByEventType    []*CostEventTypeRow    `protobuf:"bytes,6,rep,name=by_event_type,json=byEventType,proto3" json:"by_event_type,omitempty"`
 	// The runs of the namespace whose stored history is missing or cannot be
 	// read. None of their events are in any number above.
-	SkippedRuns   *int64 `protobuf:"varint,7,opt,name=skipped_runs,json=skippedRuns,proto3,oneof" json:"skipped_runs,omitempty"`
+	SkippedRuns *int64 `protobuf:"varint,7,opt,name=skipped_runs,json=skippedRuns,proto3,oneof" json:"skipped_runs,omitempty"`
+	// Whether the list goes on after this page, and how to ask for the next.
+	Page          *PageResponse `protobuf:"bytes,8,opt,name=page,proto3" json:"page,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -572,11 +583,18 @@ func (x *CostBreakdownResponse) GetSkippedRuns() int64 {
 	return 0
 }
 
+func (x *CostBreakdownResponse) GetPage() *PageResponse {
+	if x != nil {
+		return x.Page
+	}
+	return nil
+}
+
 var File_flowrensic_v1_cost_proto protoreflect.FileDescriptor
 
 const file_flowrensic_v1_cost_proto_rawDesc = "" +
 	"\n" +
-	"\x18flowrensic/v1/cost.proto\x12\rflowrensic.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"~\n" +
+	"\x18flowrensic/v1/cost.proto\x12\rflowrensic.v1\x1a\x18flowrensic/v1/page.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"~\n" +
 	"\n" +
 	"CostWindow\x129\n" +
 	"\n" +
@@ -621,9 +639,10 @@ const file_flowrensic_v1_cost_proto_rawDesc = "" +
 	"\bprevious\x18\x03 \x01(\x03H\x01R\bprevious\x88\x01\x01B\n" +
 	"\n" +
 	"\b_currentB\v\n" +
-	"\t_previous\"9\n" +
+	"\t_previous\"i\n" +
 	"\x14CostBreakdownRequest\x12!\n" +
-	"\fnamespace_id\x18\x01 \x01(\tR\vnamespaceId\"\xd2\x03\n" +
+	"\fnamespace_id\x18\x01 \x01(\tR\vnamespaceId\x12.\n" +
+	"\x04page\x18\x02 \x01(\v2\x1a.flowrensic.v1.PageRequestR\x04page\"\x83\x04\n" +
 	"\x15CostBreakdownResponse\x121\n" +
 	"\x06window\x18\x01 \x01(\v2\x19.flowrensic.v1.CostWindowR\x06window\x12B\n" +
 	"\x0fprevious_window\x18\x02 \x01(\v2\x19.flowrensic.v1.CostWindowR\x0epreviousWindow\x121\n" +
@@ -631,7 +650,8 @@ const file_flowrensic_v1_cost_proto_rawDesc = "" +
 	"\x10by_workflow_type\x18\x04 \x03(\v2\".flowrensic.v1.CostWorkflowTypeRowR\x0ebyWorkflowType\x12C\n" +
 	"\rby_task_queue\x18\x05 \x03(\v2\x1f.flowrensic.v1.CostTaskQueueRowR\vbyTaskQueue\x12C\n" +
 	"\rby_event_type\x18\x06 \x03(\v2\x1f.flowrensic.v1.CostEventTypeRowR\vbyEventType\x12&\n" +
-	"\fskipped_runs\x18\a \x01(\x03H\x00R\vskippedRuns\x88\x01\x01B\x0f\n" +
+	"\fskipped_runs\x18\a \x01(\x03H\x00R\vskippedRuns\x88\x01\x01\x12/\n" +
+	"\x04page\x18\b \x01(\v2\x1b.flowrensic.v1.PageResponseR\x04pageB\x0f\n" +
 	"\r_skipped_runsB\xb2\x01\n" +
 	"\x11com.flowrensic.v1B\tCostProtoP\x01Z=go.flowrensic.com/sdk/internal/gen/flowrensic/v1;flowrensicv1\xa2\x02\x03FXX\xaa\x02\rFlowrensic.V1\xca\x02\rFlowrensic\\V1\xe2\x02\x19Flowrensic\\V1\\GPBMetadata\xea\x02\x0eFlowrensic::V1b\x06proto3"
 
@@ -658,6 +678,8 @@ var file_flowrensic_v1_cost_proto_goTypes = []any{
 	(*CostBreakdownRequest)(nil),  // 6: flowrensic.v1.CostBreakdownRequest
 	(*CostBreakdownResponse)(nil), // 7: flowrensic.v1.CostBreakdownResponse
 	(*timestamppb.Timestamp)(nil), // 8: google.protobuf.Timestamp
+	(*PageRequest)(nil),           // 9: flowrensic.v1.PageRequest
+	(*PageResponse)(nil),          // 10: flowrensic.v1.PageResponse
 }
 var file_flowrensic_v1_cost_proto_depIdxs = []int32{
 	8,  // 0: flowrensic.v1.CostWindow.started_at:type_name -> google.protobuf.Timestamp
@@ -668,17 +690,19 @@ var file_flowrensic_v1_cost_proto_depIdxs = []int32{
 	1,  // 5: flowrensic.v1.CostWorkflowTypeRow.previous:type_name -> flowrensic.v1.CostTotals
 	1,  // 6: flowrensic.v1.CostTaskQueueRow.current:type_name -> flowrensic.v1.CostTotals
 	1,  // 7: flowrensic.v1.CostTaskQueueRow.previous:type_name -> flowrensic.v1.CostTotals
-	0,  // 8: flowrensic.v1.CostBreakdownResponse.window:type_name -> flowrensic.v1.CostWindow
-	0,  // 9: flowrensic.v1.CostBreakdownResponse.previous_window:type_name -> flowrensic.v1.CostWindow
-	2,  // 10: flowrensic.v1.CostBreakdownResponse.total:type_name -> flowrensic.v1.CostCompared
-	3,  // 11: flowrensic.v1.CostBreakdownResponse.by_workflow_type:type_name -> flowrensic.v1.CostWorkflowTypeRow
-	4,  // 12: flowrensic.v1.CostBreakdownResponse.by_task_queue:type_name -> flowrensic.v1.CostTaskQueueRow
-	5,  // 13: flowrensic.v1.CostBreakdownResponse.by_event_type:type_name -> flowrensic.v1.CostEventTypeRow
-	14, // [14:14] is the sub-list for method output_type
-	14, // [14:14] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	9,  // 8: flowrensic.v1.CostBreakdownRequest.page:type_name -> flowrensic.v1.PageRequest
+	0,  // 9: flowrensic.v1.CostBreakdownResponse.window:type_name -> flowrensic.v1.CostWindow
+	0,  // 10: flowrensic.v1.CostBreakdownResponse.previous_window:type_name -> flowrensic.v1.CostWindow
+	2,  // 11: flowrensic.v1.CostBreakdownResponse.total:type_name -> flowrensic.v1.CostCompared
+	3,  // 12: flowrensic.v1.CostBreakdownResponse.by_workflow_type:type_name -> flowrensic.v1.CostWorkflowTypeRow
+	4,  // 13: flowrensic.v1.CostBreakdownResponse.by_task_queue:type_name -> flowrensic.v1.CostTaskQueueRow
+	5,  // 14: flowrensic.v1.CostBreakdownResponse.by_event_type:type_name -> flowrensic.v1.CostEventTypeRow
+	10, // 15: flowrensic.v1.CostBreakdownResponse.page:type_name -> flowrensic.v1.PageResponse
+	16, // [16:16] is the sub-list for method output_type
+	16, // [16:16] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_flowrensic_v1_cost_proto_init() }
@@ -686,6 +710,7 @@ func file_flowrensic_v1_cost_proto_init() {
 	if File_flowrensic_v1_cost_proto != nil {
 		return
 	}
+	file_flowrensic_v1_page_proto_init()
 	file_flowrensic_v1_cost_proto_msgTypes[1].OneofWrappers = []any{}
 	file_flowrensic_v1_cost_proto_msgTypes[2].OneofWrappers = []any{}
 	file_flowrensic_v1_cost_proto_msgTypes[3].OneofWrappers = []any{}
